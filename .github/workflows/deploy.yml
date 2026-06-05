@@ -14,6 +14,33 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v6
 
+      # 🛠️ Step 1: Compile the frontend securely in the GitHub Cloud
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-dir: 'frontend'
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build Frontend Production Assets
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      # 🛠️ Step 2: Push the compiled "dist" folder to your OCI server via SSH
+      - name: Copy Dist Folder to OCI Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.OCI_SERVER_IP }}
+          username: ${{ secrets.OCI_SERVER_USER }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          port: 22
+          source: "frontend/dist/"
+          target: "~/impression-track/"
+
+      # 🛠️ Step 3: Pull the backend code changes and spin up Docker
       - name: Execute Remote SSH Deployment Script
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -22,22 +49,21 @@ jobs:
           key: ${{ secrets.OCI_SSH_KEY }}
           port: 22
           script_stop: true
-          debug: true
           script: |
-            # 1. Force path structure stability
             mkdir -p ~/impression-track
             cd ~/impression-track
 
-            # 2. Re-initialize Git safely without empty-directory errors
             if [ ! -d ".git" ]; then
               git init
               git remote add origin https://github.com/${{ github.repository }}.git
             fi
 
-            # 3. Clean tracking sync
             git fetch --all
             git reset --hard origin/main
 
-            # 4. Use sudo wrapper to explicitly bypass any cached system socket locks
+            # Move the transferred dist folder to where the Dockerfile expects it
+            mkdir -p frontend
+            mv -f target/frontend/dist frontend/ || true
+
             sudo docker compose down --remove-orphans || true
             sudo docker compose up -d --build
