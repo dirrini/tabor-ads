@@ -1,6 +1,5 @@
 <?php
 // track.php
-header('Access-Control-Allow-Origin: http://localhost:3000');
 // Set headers to deliver a 1x1 transparent GIF pixel
 header('Content-Type: image/gif');
 header('Cache-Control: no-cache, must-revalidate');

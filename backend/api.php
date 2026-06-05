@@ -1,9 +1,5 @@
 <?php
 // api.php
-// Allow access from your local frontend origin
-header('Access-Control-Allow-Origin: http://localhost:3000');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 // Handle preflight OPTIONS requests (browsers send this automatically before the real request)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
