@@ -1,0 +1,36 @@
+name: Continuous Deployment to OCI Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v6
+
+      - name: Execute Remote SSH Deployment Script
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          # GitHub will now correctly look inside the Production environment for these
+          host: ${{ secrets.OCI_SERVER_IP }}
+          username: ${{ secrets.OCI_SERVER_USER }}
+          key: ${{ secrets.OCI_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            mkdir -p ~/impression-track
+            cd ~/impression-track
+
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/${{ github.repository }}.git .
+            else
+              git pull origin main
+            fi
+
+            docker compose down --remove-orphans
+            docker compose up -d --build
