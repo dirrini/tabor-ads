@@ -38,7 +38,7 @@ jobs:
           key: ${{ secrets.OCI_SSH_KEY }}
           port: 22
           source: "frontend/dist/"
-          target: "/root/impression-track/"
+          target: "~/impression-track/"
 
       # 3. Handle the remote Git synchronization and Docker build
       - name: Execute Remote SSH Deployment Script
@@ -52,8 +52,8 @@ jobs:
           debug: true
           script: |
             # Ensure the root directory exists
-            mkdir -p /root/impression-track
-            cd /root/impression-track
+            mkdir -p ~/impression-track
+            cd ~/impression-track
 
             # 🛠️ FIXED SELF-HEALING GIT CHECK: No branch creation on empty repos
             if [ ! -d ".git" ]; then
