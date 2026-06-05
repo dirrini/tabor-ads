@@ -14,22 +14,22 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v6
 
-      # 🛠️ Step 1: Compile the frontend securely in the GitHub Cloud
+      # 1. Compile the frontend securely in the GitHub Cloud
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-dir: 'frontend'
           node-version: 18
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
+      # Clean install and build your frontend assets
       - name: Build Frontend Production Assets
         run: |
           cd frontend
           npm ci
           npm run build
 
-      # 🛠️ Step 2: Push the compiled "dist" folder to your OCI server via SSH
+      # 2. Push the compiled "dist" folder to your OCI server via SSH
       - name: Copy Dist Folder to OCI Server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -40,7 +40,7 @@ jobs:
           source: "frontend/dist/"
           target: "~/impression-track/"
 
-      # 🛠️ Step 3: Pull the backend code changes and spin up Docker
+      # 3. Handle the remote Git synchronization and Docker build
       - name: Execute Remote SSH Deployment Script
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -49,21 +49,29 @@ jobs:
           key: ${{ secrets.OCI_SSH_KEY }}
           port: 22
           script_stop: true
+          debug: true
           script: |
+            # Ensure the root directory exists
             mkdir -p ~/impression-track
             cd ~/impression-track
 
+            # 🛠️ SELF-HEALING GIT CHECK: Works if empty, works if populated
             if [ ! -d ".git" ]; then
+              echo "🔄 Target directory is not a Git repo. Initializing now..."
               git init
               git remote add origin https://github.com/${{ github.repository }}.git
+              git checkout -b main || git checkout main
+            else
+              echo "✅ Git repository detected. Ensuring correct remote URL..."
+              git remote set-url origin https://github.com/${{ github.repository }}.git
             fi
 
-            git fetch --all
+            # Safe fetch and hard reset to match production remote main branch exactly
+            git fetch origin main
             git reset --hard origin/main
 
-            # Move the transferred dist folder to where the Dockerfile expects it
-            mkdir -p frontend
-            mv -f target/frontend/dist frontend/ || true
-
+            # Spin down existing container infrastructure safely
             sudo docker compose down --remove-orphans || true
+            
+            # Rebuild and run the immutable containers from the fresh files
             sudo docker compose up -d --build
