@@ -1,110 +1,83 @@
-name: Continuous Deployment to OCI Production
+name: Deploy to OCI Production
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [Continuous Integration]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    name: Deploy validated revision
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment: Production
 
     steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v6
-
-      # 1. Compile the frontend securely in the GitHub Cloud
-      - name: Setup Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: 18
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      # Clean install and build your frontend assets
-      - name: Build Frontend Production Assets
-        run: |
-          cd frontend
-          npm ci
-          npm run build
-
-      # 2. Push the compiled "dist" folder to your OCI server via SSH
-      - name: Copy Dist Folder to OCI Server
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.OCI_SERVER_IP }}
           username: ${{ secrets.OCI_SERVER_USER }}
           key: ${{ secrets.OCI_SSH_KEY }}
           port: 22
-          source: "frontend/dist/"
-          target: "~/impression-track/"
-
-      # 3. Handle the remote Git synchronization and Docker build
-      - name: Execute Remote SSH Deployment Script
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.OCI_SERVER_IP }}
-          username: ${{ secrets.OCI_SERVER_USER }}
-          key: ${{ secrets.OCI_SSH_KEY }}
-          port: 22
-          script_stop: true
-          debug: true
+          command_timeout: 20m
           script: |
-            set -xe # -e ensures the script fails immediately if any command returns a non-zero status
-            
-            mkdir -p ~/impression-track
-            cd ~/impression-track
+            set -euo pipefail
 
-            # Capture the current working commit hash in case we need to roll back
-            PREVIOUS_STABLE_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "")
+            APP_DIR="$HOME/impression-track"
+            DEPLOY_SHA="${{ github.event.workflow_run.head_sha || github.sha }}"
+            REPOSITORY="https://github.com/${{ github.repository }}.git"
 
-            if [ -d ".git" ]
-            then
-              git remote set-url origin https://github.com/${{ github.repository }}.git
-            else
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            if [ ! -d .git ]; then
               git init
-              git remote add origin https://github.com/${{ github.repository }}.git
+              git remote add origin "$REPOSITORY"
             fi
 
-            git fetch origin main
-            git reset --hard origin/main
+            PREVIOUS_STABLE_COMMIT="$(git rev-parse HEAD 2>/dev/null || true)"
 
-            # Spin down and recreate the containers cleanly
-            sudo docker compose down --remove-orphans || true
-            sudo docker compose up -d --build
+            git fetch --prune origin main
+            git reset --hard "$DEPLOY_SHA"
 
-            # 📡 --- LIVE PRODUCTION HEALTH CHECK LOOP ---
-            echo "Waiting for the backend API to wake up..."
+            if [ ! -f .env ]; then
+              echo "Missing $APP_DIR/.env. Create it from .env.example before deploying."
+              exit 1
+            fi
+
+            sudo docker compose config --quiet
+            sudo docker compose up -d --build --remove-orphans
+
             HEALTH_PASSED=false
-
-            for i in {1..6}; do
-              # Pings the container locally via Nginx proxy on port 8080
-              STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/analytics || echo "000")
-              
-              if [ "$STATUS_CODE" -eq 200 ]; then
-                echo "✅ Health check passed! API returned HTTP 200."
+            for attempt in $(seq 1 18); do
+              if curl --fail --silent --show-error http://127.0.0.1:8080/up >/dev/null; then
                 HEALTH_PASSED=true
+                echo "Health check passed."
                 break
               fi
 
-              echo "⚠️ Attempt $i: API returned HTTP $STATUS_CODE. Retrying in 5 seconds..."
+              echo "Health check attempt $attempt failed; retrying in 5 seconds."
               sleep 5
             done
 
-            # 🚨 --- AUTOMATED EMERGENCY ROLLBACK TRIGGER ---
             if [ "$HEALTH_PASSED" = false ]; then
-              echo "❌ CRITICAL: Health check failed! Initiating automated rollback..."
-              
-              if [ -not -z "$PREVIOUS_STABLE_COMMIT" ]; then
-                echo "Rolling back server state to stable commit: $PREVIOUS_STABLE_COMMIT"
+              echo "Deployment health check failed."
+
+              if [ -n "$PREVIOUS_STABLE_COMMIT" ]; then
+                echo "Rolling back to $PREVIOUS_STABLE_COMMIT."
                 git reset --hard "$PREVIOUS_STABLE_COMMIT"
-                sudo docker compose down --remove-orphans || true
-                sudo docker compose up -d --build --force-recreate
-              else
-                echo "No previous stable commit history found on disk to roll back to!"
+                sudo docker compose up -d --build --remove-orphans
               fi
-              
-              echo "Production restored to previous stable version. Failing the GitHub Actions build now."
+
               exit 1
             fi
