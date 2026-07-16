@@ -1,80 +1,91 @@
-name: Continuous Integration - Development Staging
+name: Continuous Integration
 
 on:
   push:
-    branches:
-      - develop
+    branches: [main, develop]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  validate-frontend:
-    name: Validate & Build Frontend
+  backend:
+    name: Laravel tests and style
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
 
     steps:
-      - name: Checkout Source Code
+      - name: Checkout source
         uses: actions/checkout@v6
 
-      - name: Setup Node.js Environment
-        uses: actions/setup-node@v5
-        with:
-          node-version: 18
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install Frontend Dependencies
-        run: |
-          cd frontend
-          npm ci
-
-      # Verifies Vite compilation succeeds without Javascript errors
-      - name: Test Production Compilation
-        run: |
-          cd frontend
-          npm run build
-
-  validate-backend:
-    name: Lint & Validate PHP Backend
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v6
-
-      - name: Setup PHP Runtime Environment
+      - name: Setup PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          extensions: pdo, pdo_mysql, curl
-          tools: phpintle, none
+          php-version: '8.4'
+          extensions: curl, pcntl, pdo_mysql, pdo_sqlite, sqlite3
+          coverage: none
+          tools: composer:v2
 
-      # 🛠️ SYNTAX CHECKER: Automatically scans your new REST routing logic for typos or missing semicolons
-      - name: Check PHP Syntax (Linting)
-        run: |
-          echo "Scanning PHP files for syntax integrity..."
-          find . -type f -name "*.php" -not -path "*/node_modules/*" -exec php -l {} \; | grep -v "No syntax errors detected" && exit 1 || true
+      - name: Cache Composer packages
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/composer/files
+          key: ${{ runner.os }}-composer-${{ hashFiles('api/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
 
-  validate-docker:
-    name: Validate Docker Infrastructure Configurations
+      - name: Install backend dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Check PHP formatting
+        run: vendor/bin/pint --test
+
+      - name: Run Laravel tests
+        run: php artisan test --compact
+
+  frontend:
+    name: Vue production build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+  containers:
+    name: Docker Compose validation
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Source Code
+      - name: Checkout source
         uses: actions/checkout@v6
 
-      # 🛠️ THE FIX: Dynamically generate a temporary .env file so Docker Compose doesn't crash
-      - name: Create Temporary .env File for Validation
-        run: |
-          touch .env
-          echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+      - name: Create CI environment
+        run: cp .env.example .env
 
-      # Validates that your docker-compose syntax remains perfectly formatted
-      - name: Validate Docker Compose Configuration File
-        run: |
-          docker compose config
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+
+      - name: Build application images
+        run: docker compose build backend frontend
