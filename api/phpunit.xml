@@ -22,13 +22,19 @@
         <env name="APP_KEY" value="base64:bG9jYWwtZGV2LWtleS0zMi1ieXRlcy1sb25nISEhISE=" force="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="BROADCAST_CONNECTION" value="null"/>
+        <env name="BROADCAST_CONNECTION" value="reverb" force="true"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite" force="true"/>
         <env name="DB_DATABASE" value=":memory:" force="true"/>
         <env name="DB_URL" value="" force="true"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="REVERB_APP_ID" value="testing-app" force="true"/>
+        <env name="REVERB_APP_KEY" value="testing-key" force="true"/>
+        <env name="REVERB_APP_SECRET" value="testing-secret" force="true"/>
+        <env name="REVERB_HOST" value="localhost" force="true"/>
+        <env name="REVERB_PORT" value="8080" force="true"/>
+        <env name="REVERB_SCHEME" value="http" force="true"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
