@@ -1,10 +1,16 @@
+# syntax=docker/dockerfile:1
+
 FROM composer:2 AS vendor
 WORKDIR /app
+COPY composer.json composer.lock ./
+RUN --mount=type=cache,target=/tmp/composer-cache \
+    COMPOSER_CACHE_DIR=/tmp/composer-cache composer install \
+    --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --no-autoloader
 COPY . .
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+RUN composer dump-autoload --no-dev --optimize --no-interaction
 
 FROM php:8.4-fpm-alpine
-RUN docker-php-ext-install pcntl pdo pdo_mysql
+RUN docker-php-ext-install pcntl pdo_mysql
 WORKDIR /var/www/html
 COPY --from=vendor /app/vendor ./vendor
 COPY . .
