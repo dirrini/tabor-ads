@@ -10,6 +10,7 @@ abstract class TestCase extends BaseTestCase
     {
         foreach ([
             'APP_ENV' => 'testing',
+            'APP_KEY' => 'base64:bG9jYWwtZGV2LWtleS0zMi1ieXRlcy1sb25nISEhISE=',
             'DB_CONNECTION' => 'sqlite',
             'DB_DATABASE' => ':memory:',
             'DB_URL' => '',
