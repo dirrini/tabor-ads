@@ -198,6 +198,15 @@ en.profile = {
   roles: { owner: 'Owner', admin: 'Administrator', member: 'Member' }, cycles: { monthly: 'Monthly', annual: 'Annual', premium: 'Premium' }, statuses: { active: 'Active', past_due: 'Grace period', pending: 'Pending', canceled: 'Canceled' },
 }
 
+Object.assign(pt.billing, {
+  pixCanceled: 'O pagamento Pix foi cancelado ou expirou. Gere um novo código para tentar novamente.',
+  confirmationDelayed: 'A confirmação está demorando mais que o esperado. Você pode manter esta tela aberta; o plano será atualizado quando o pagamento for confirmado.',
+})
+Object.assign(en.billing, {
+  pixCanceled: 'The Pix payment was canceled or expired. Create a new code to try again.',
+  confirmationDelayed: 'Confirmation is taking longer than expected. You can keep this page open; the plan will update when the payment is confirmed.',
+})
+
 const normalize = (locale) => SUPPORTED_LOCALES.includes(locale) ? locale : 'pt-BR'
 const initialLocale = normalize(localStorage.getItem(LOCALE_STORAGE_KEY))
 export const i18n = createI18n({ legacy: false, locale: initialLocale, fallbackLocale: 'pt-BR', messages: { 'pt-BR': pt, en } })

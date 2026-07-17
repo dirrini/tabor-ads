@@ -21,11 +21,12 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
+import { createEcho } from '../lib/echo'
 import LocaleSwitcher from '../components/LocaleSwitcher.vue'
 import BrandLogo from '../components/BrandLogo.vue'
 
@@ -34,6 +35,16 @@ const toast = useToastStore()
 const router = useRouter()
 const { t } = useI18n()
 const initials = computed(() => auth.workspace?.name?.split(' ').map((part) => part[0]).slice(0, 2).join(''))
+let billingEcho = null
+
+function setupBillingUpdates() {
+  if (!auth.workspace?.id) return
+  billingEcho = createEcho()
+  billingEcho.private(`workspaces.${auth.workspace.id}.billing`)
+    .listenToAll((event, payload) => {
+      if (event === '.workspace.plan.updated') auth.applyWorkspacePlan(payload)
+    })
+}
 
 async function logout() {
   try {
@@ -44,4 +55,7 @@ async function logout() {
     toast.error(exception.message)
   }
 }
+
+onMounted(setupBillingUpdates)
+onBeforeUnmount(() => billingEcho?.disconnect())
 </script>

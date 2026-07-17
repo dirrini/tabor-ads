@@ -46,5 +46,8 @@ Route::prefix('api')->group(function () {
         Route::post('/simulation/stop', [SimulationController::class, 'stop'])->middleware('throttle:30,1');
         Route::get('/billing/configuration', [BillingController::class, 'configuration']);
         Route::post('/billing/payment', [BillingController::class, 'payment'])->middleware('throttle:6,1');
+        Route::get('/billing/payments/{paymentId}/status', [BillingController::class, 'status'])
+            ->where('paymentId', '[0-9]+')
+            ->middleware('throttle:20,1');
     });
 });

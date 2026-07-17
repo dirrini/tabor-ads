@@ -18,3 +18,7 @@ Broadcast::channel('workspaces.{workspaceId}.campaigns.{campaignId}', function (
 
     return $campaign->kind === 'simulation' || app(PlanService::class)->realtime($workspace);
 });
+
+Broadcast::channel('workspaces.{workspaceId}.billing', function (User $user, int $workspaceId) {
+    return $user->workspaces()->where('workspaces.id', $workspaceId)->exists();
+});
