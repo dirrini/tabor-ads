@@ -12,7 +12,16 @@
       <article class="price-card"><small>{{ t('landing.pricing.monthly') }}</small><h3>R$ 1,90 <span>/ {{ t('common.month') }}</span></h3><p>{{ t('landing.pricing.monthlyText') }}</p><ul><li>{{ t('landing.pricing.campaigns20') }}</li><li>{{ t('landing.pricing.tenAds') }}</li><li>{{ t('landing.pricing.realtime') }}</li><li>{{ t('landing.pricing.fiveMembers') }}</li></ul><RouterLink class="btn btn-dark" :to="premiumRoute('monthly')">{{ t('landing.pricing.chooseMonthly') }}</RouterLink></article>
       <article class="price-card featured"><div class="popular">{{ t('landing.pricing.best') }}</div><small>{{ t('landing.pricing.annual') }}</small><h3>R$ 9,90 <span>/ {{ t('common.year') }}</span></h3><p>{{ t('landing.pricing.annualText') }}</p><ul><li>{{ t('landing.pricing.allPremium') }}</li><li>{{ t('landing.pricing.singlePayment') }}</li><li>{{ t('landing.pricing.pixCard') }}</li><li>{{ t('landing.pricing.twelveMonths') }}</li></ul><RouterLink class="btn btn-primary" :to="premiumRoute('annual')">{{ t('landing.pricing.chooseAnnual') }}</RouterLink></article>
     </div></section>
-    <footer class="footer wrap"><BrandLogo/><p>{{ t('landing.footer') }}</p></footer>
+    <footer class="footer wrap">
+      <BrandLogo/>
+      <div class="footer-copy">
+        <p>{{ t('landing.footer') }}</p>
+        <nav class="footer-links" :aria-label="t('legal.footerNavigation')">
+          <RouterLink to="/privacy">{{ t('legal.privacy.link') }}</RouterLink>
+          <RouterLink to="/terms">{{ t('legal.terms.link') }}</RouterLink>
+        </nav>
+      </div>
+    </footer>
   </main>
 </template>
 <script setup>
