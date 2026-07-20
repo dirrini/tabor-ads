@@ -1,108 +1,135 @@
 # Tabor Ads
 
-Tabor Ads é uma plataforma SaaS de analytics para anúncios. Ela combina tracking de impressões por pixel, workspaces com equipes, campanhas com múltiplos ads, dashboard analítico e demonstração de tráfego em tempo real.
+Tabor Ads is an ad analytics SaaS platform. It combines pixel-based impression tracking, team workspaces, campaigns with multiple ads, an analytics dashboard, and real-time traffic simulation.
 
-## Recursos atuais
+## Current features
 
-- Landing page pública responsiva com apresentação dos planos.
-- Cadastro e login por e-mail/senha ou Google OAuth.
-- Associação automática do Google a uma conta existente com o mesmo e-mail.
-- Workspaces isolados, membros e convites por e-mail.
-- Perfil com plano, validade do Premium, uso dos limites, dados da conta e troca/criação de senha.
-- Interface em PT-BR e EN; a preferência pública fica no navegador e a autenticada também é salva no usuário.
-- Campanhas padrão com múltiplos ads e pixel exclusivo por ad.
-- Campanhas de simulação ilimitadas, fora da cota do plano.
-- Dashboard com filtros por período, campanhas e ads, totais, navegadores, comparação entre períodos e evolução diária.
-- Atualizações por WebSocket em canais privados do workspace/campanha.
-- Checkout transparente do Mercado Pago com cartão e Pix na própria página.
-- Feedback global de sucesso e erro por toast.
+- Responsive public landing page with plan details.
+- Sign-up and login with email/password or Google OAuth.
+- Signed email verification before workspace tools are enabled.
+- Automatic linking of Google identities to existing accounts with the same email address.
+- Isolated workspaces, email invitations, and per-member campaign/metrics permissions.
+- Profile page with plan details, Premium expiration date, quota usage, account information, and password creation/change.
+- PT-BR and EN interfaces; the public language preference is stored in the browser, while the authenticated preference is also saved to the user profile.
+- Standard campaigns with multiple ads and a unique tracking pixel for each ad.
+- Unlimited simulation campaigns that do not count toward plan quotas.
+- Dashboard with date range, campaign, and ad filters, totals, browser breakdown, period comparison, and daily trends.
+- WebSocket updates through private workspace and campaign channels.
+- Embedded Mercado Pago checkout with credit card and Pix payments on the same page.
+- Global success and error feedback through toast notifications.
 
-> O tracking público atual mede impressões. Rastreamento de cliques e conversões ainda não faz parte desta versão.
+> Public tracking currently measures impressions. Click and conversion tracking are not part of this version yet.
 
-## Planos e limites
+## Plans and limits
 
-| Recurso | Free | Premium |
+| Feature | Free | Premium |
 | --- | ---: | ---: |
-| Campanhas padrão não arquivadas | 3 | 20 |
-| Ads por campanha padrão | 1 | 10 |
-| Membros no workspace | 1 | 5 |
-| Dashboard | Snapshot sob demanda | Realtime |
-| Simulador em realtime | Sim | Sim |
+| Active standard campaigns | 3 | 20 |
+| Ads per standard campaign | 1 | 10 |
+| Workspace members | 1 | 5 |
+| Dashboard | On-demand snapshot | Real-time |
+| Real-time simulator | Yes | Yes |
 
-Campanhas `simulation` não consomem a cota de campanhas. Ao ligar o simulador, todas elas recebem eventos a cada segundo por até três minutos. Cada campanha recebe um peso estável e diferente durante a sessão, evitando séries com volumes praticamente iguais. Uma nova sessão redistribui os pesos.
+`simulation` campaigns do not count toward the campaign quota. When the simulator is enabled, all simulation campaigns receive events every second for up to three minutes. Each campaign receives a different, stable weight for the duration of the session, preventing their series from converging on nearly identical volumes. Starting a new session redistributes the weights.
 
-## Stack
+## Tech stack
 
-- Laravel 13 e PHP 8.4
-- Vue 3, Vue Router, Pinia, Vue I18n, Chart.js e Laravel Echo
+- Laravel 13 and PHP 8.4
+- Vue 3, Vue Router, Pinia, Vue I18n, Chart.js, and Laravel Echo
 - MySQL 8
-- Laravel Reverb para WebSockets
-- Laravel Socialite para Google OAuth
-- Mercado Pago Checkout Transparente
-- Docker Compose e Nginx
-- PHPUnit e Laravel Pint
+- Laravel Reverb for WebSockets
+- Laravel Socialite for Google OAuth
+- Mercado Pago embedded checkout
+- Docker Compose and Nginx
+- PHPUnit and Laravel Pint
 
-## Arquitetura
+## Architecture
 
 ```text
 Browser
-  └─ frontend :3000 (Nginx + Vue SPA)
-       ├─ /api, /t e /broadcasting → webserver :8080
-       └─ /app/{reverb-key}         → reverb :8080
+  `-- frontend :3000 (Nginx + Vue SPA)
+      |-- /api, /t, and /broadcasting -> webserver :8080
+      `-- /app/{reverb-key}           -> reverb :8080
 
 webserver (Nginx/FastCGI)
-  └─ backend (Laravel PHP-FPM)
-       └─ db (MySQL 8)
+  `-- backend (Laravel PHP-FPM)
+      `-- db (MySQL 8)
 ```
 
-O Laravel concentra autenticação, autorização, domínio, tracking, analytics, billing, webhooks e broadcasting. O Reverb reutiliza a mesma aplicação Laravel e publica somente em canais privados autorizados.
+Laravel handles authentication, authorization, domain logic, tracking, analytics, billing, webhooks, and broadcasting. Reverb runs within the same Laravel application and publishes only to authorized private channels.
 
-## Executar localmente
+## Run locally
 
-Pré-requisitos: Docker Desktop com Docker Compose.
+Prerequisite: Docker Desktop with Docker Compose.
 
-1. Copie o arquivo de exemplo:
+1. Copy the example environment file:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-2. Preencha as credenciais opcionais de Google e Mercado Pago.
-3. Suba o ambiente:
+2. Fill in the optional Google and Mercado Pago credentials.
+3. Start the environment:
 
 ```powershell
 docker compose up -d --build
 ```
 
-4. Acesse:
+4. Open:
 
-- Aplicação: `http://127.0.0.1:3000`
-- Health check da API: `http://127.0.0.1:8080/up`
+- Application: `http://127.0.0.1:3000`
+- API health check: `http://127.0.0.1:8080/up`
 
-As migrations são executadas automaticamente quando o contêiner `backend` inicia. O banco local persiste em `data/`, que não deve ser versionado.
+Migrations run automatically when the `backend` container starts. The local database is persisted in `data/`, which must not be committed.
 
-Para acompanhar os serviços:
+To monitor the services:
 
 ```powershell
 docker compose ps
 docker compose logs -f backend reverb frontend
 ```
 
-## Variáveis de ambiente
+## Environment variables
 
-O arquivo [.env.example](.env.example) documenta todas as variáveis usadas pelo Compose. As principais categorias são:
+The [.env.example](.env.example) file documents every variable used by Docker Compose. The main categories are:
 
-- Aplicação: `APP_KEY`, `APP_URL`, `FRONTEND_URL`, `SESSION_DOMAIN`.
+- Application: `APP_KEY`, `APP_URL`, `FRONTEND_URL`, `SESSION_DOMAIN`.
 - MySQL: `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_ROOT_PASSWORD`.
 - Google OAuth: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
-- Mercado Pago: `MERCADO_PAGO_PUBLIC_KEY`, `MERCADO_PAGO_ACCESS_TOKEN`, `MERCADO_PAGO_WEBHOOK_SECRET`, preços e URL de notificação.
-- Reverb: `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, host, porta e esquema.
+- Transactional email: `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, and sender identity.
+- Mercado Pago: `MERCADO_PAGO_PUBLIC_KEY`, `MERCADO_PAGO_ACCESS_TOKEN`, `MERCADO_PAGO_WEBHOOK_SECRET`, prices, and notification URL.
+- Reverb: `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, host, port, and scheme.
 
-Nunca versione `.env`, Access Tokens, chaves privadas ou dados do volume MySQL.
+Never commit `.env`, access tokens, private keys, or MySQL volume data.
+
+## Transactional email and verification
+
+Tabor Ads uses Laravel Mail through SMTP for account verification and workspace invitations. The recommended provider is Resend, although any compatible SMTP service can be used.
+
+`APP_URL` must be the public HTTPS address of the application (for example, `https://tabor-ads.example.com`), because Laravel uses it to generate the signed email-verification links. `FRONTEND_URL` must point to the same public frontend origin.
+
+For Resend in production, verify the sending domain, create an API key, and configure:
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_SCHEME=null
+MAIL_HOST=smtp.resend.com
+MAIL_PORT=587
+MAIL_TIMEOUT=10
+MAIL_USERNAME=resend
+MAIL_PASSWORD=re_your_api_key
+MAIL_FROM_ADDRESS=notifications@your-domain.com
+MAIL_FROM_NAME="Tabor Ads"
+MAIL_LOGO_URL=https://your-domain.com/brand/tabor-ads-logo.svg
+```
+
+`MAIL_LOGO_URL` is optional, but it should use a publicly accessible HTTPS URL when emails are opened in Gmail, Outlook, or another remote client. This is especially useful during local development, since those clients cannot load an image from `127.0.0.1`.
+
+The sender address must belong to the domain verified with the email provider. New email/password accounts receive a signed verification link that expires after 60 minutes. Workspace invitation links expire after seven days and preserve the permissions selected by the workspace owner. Google accounts are considered verified by the identity provider.
 
 ## Google OAuth
 
-Crie um cliente OAuth do tipo **Aplicativo da Web** no Google Cloud e configure:
+Create a **Web application** OAuth client in Google Cloud and configure:
 
 ```dotenv
 GOOGLE_CLIENT_ID=
@@ -110,13 +137,13 @@ GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=http://127.0.0.1:3000/api/auth/google/callback
 ```
 
-A URI cadastrada no Google deve ser idêntica a `GOOGLE_REDIRECT_URI`, incluindo protocolo, host, porta e caminho. Em produção, substitua pelo domínio HTTPS público.
+The URI registered with Google must match `GOOGLE_REDIRECT_URI` exactly, including its scheme, host, port, and path. In production, replace it with the public HTTPS domain.
 
-Quando o Google retorna um e-mail já existente, a identidade é vinculada à conta atual sem remover sua senha. Para uma conta nova criada pelo Google, o usuário pode definir posteriormente uma senha na tela de perfil.
+When Google returns an email address that already exists, the identity is linked to the current account without removing its password. Users whose accounts were created through Google can set a password later on the profile page.
 
 ## Mercado Pago
 
-Use a **Public Key** e o **Access Token** da mesma aplicação e do mesmo ambiente (teste ou produção):
+Use the **Public Key** and **Access Token** from the same application and environment (test or production):
 
 ```dotenv
 MERCADO_PAGO_BASE_URL=https://api.mercadopago.com
@@ -126,30 +153,30 @@ MERCADO_PAGO_WEBHOOK_SECRET=
 MERCADO_PAGO_PREMIUM_MONTHLY_AMOUNT=1.90
 MERCADO_PAGO_PREMIUM_ANNUAL_AMOUNT=9.90
 MERCADO_PAGO_CURRENCY=BRL
-MERCADO_PAGO_NOTIFICATION_URL=https://ads.seu-dominio.com/api/webhooks/mercadopago
+MERCADO_PAGO_NOTIFICATION_URL=https://ads.your-domain.com/api/webhooks/mercadopago
 ```
 
-O cartão é tokenizado pelo SDK do Mercado Pago no navegador; número, validade e CVV não passam pelo Laravel. O Pix é criado pela API autenticada e o QR Code é exibido dentro do próprio checkout. Nenhum dos fluxos redireciona o usuário para uma página de login do Mercado Pago.
+Credit card data is tokenized by the Mercado Pago SDK in the browser; the card number, expiration date, and CVV never pass through Laravel. Pix payments are created through the authenticated API, and the QR code is displayed inside the checkout form. Neither flow redirects users to a Mercado Pago login page.
 
-Os preços nunca são aceitos do frontend: o backend escolhe o valor pela periodicidade validada.
+Prices are never accepted from the frontend: the backend selects the amount based on the validated billing period.
 
-- Premium mensal: R$ 1,90 e um mês de acesso.
-- Premium anual: R$ 9,90 e doze meses de acesso.
-- Ambos são pagamentos únicos por Pix ou cartão, com renovação manual nesta versão.
+- Monthly Premium: R$1.90 for one month of access.
+- Annual Premium: R$9.90 for twelve months of access.
+- Both are one-time Pix or credit card payments with manual renewal in this version.
 
-Configure no Mercado Pago o webhook de pagamentos:
+Configure the Mercado Pago payment webhook:
 
 ```text
-POST https://ads.seu-dominio.com/api/webhooks/mercadopago
+POST https://ads.your-domain.com/api/webhooks/mercadopago
 ```
 
-O webhook valida a assinatura quando configurada, processa eventos de forma idempotente e consulta novamente o pagamento antes de alterar a assinatura local. Pagamentos aprovados ativam ou estendem o Premium; cancelamentos, estornos e chargebacks removem o período associado.
+When configured, the webhook validates the request signature, processes events idempotently, and retrieves the payment again before changing the local subscription. Approved payments activate or extend Premium; cancellations, refunds, and chargebacks remove the associated access period.
 
-Uma URL local ou privada não pode receber webhooks do Mercado Pago. Para testes, use um túnel HTTPS e configure `MERCADO_PAGO_NOTIFICATION_URL` com a URL pública.
+Mercado Pago cannot deliver webhooks to a local or private URL. For testing, use an HTTPS tunnel and set `MERCADO_PAGO_NOTIFICATION_URL` to its public URL.
 
-## Desenvolvimento e validação
+## Development and validation
 
-Frontend com Vite:
+Run the frontend with Vite:
 
 ```powershell
 Set-Location frontend
@@ -157,21 +184,21 @@ npm ci
 npm run dev
 ```
 
-Build de produção:
+Create a production build:
 
 ```powershell
 Set-Location frontend
 npm run build
 ```
 
-Testes e estilo do Laravel:
+Run Laravel tests and style checks:
 
 ```powershell
 docker compose exec -T backend php artisan test
 docker compose exec -T backend vendor/bin/pint --test
 ```
 
-Validação completa dos contêineres:
+Validate the complete container setup:
 
 ```powershell
 docker compose config --quiet
@@ -180,42 +207,42 @@ docker compose build backend frontend
 
 ## CI/CD
 
-### Integração contínua
+### Continuous integration
 
-O workflow `Continuous Integration` roda em pushes e pull requests para `main` e `develop`:
+The `Continuous Integration` workflow runs on pushes and pull requests targeting `main` and `develop`:
 
-- PHP 8.4, Composer, Laravel Pint e toda a suíte PHPUnit.
-- Node.js 22, `npm ci` e build Vite.
-- Validação do Docker Compose e build das imagens principais.
+- PHP 8.4, Composer, Laravel Pint, and the complete PHPUnit test suite.
+- Node.js 22, `npm ci`, and the Vite production build.
+- Docker Compose validation and builds of the main images.
 
-### Deploy em OCI
+### OCI deployment
 
-O workflow `Deploy to OCI Production` inicia somente após o CI da `main` concluir com sucesso, ou manualmente por `workflow_dispatch`. Ele:
+The `Deploy to OCI Production` workflow starts only after CI succeeds on `main`, or manually through `workflow_dispatch`. It:
 
-1. Conecta ao servidor por SSH.
-2. Faz deploy do SHA exatamente validado pelo CI.
-3. Confirma a existência do `.env` de produção.
-4. Valida o Compose e recria somente os serviços necessários.
-5. Verifica `http://127.0.0.1:8080/up`.
-6. Volta ao commit anterior se o health check falhar.
+1. Connects to the server over SSH.
+2. Deploys the exact commit SHA validated by CI.
+3. Confirms that the production `.env` file exists.
+4. Validates the Compose configuration and recreates only the required services.
+5. Checks `http://127.0.0.1:8080/up`.
+6. Rolls back to the previous commit if the health check fails.
 
-Secrets necessários no environment GitHub `Production`:
+Required secrets in the GitHub `Production` environment:
 
 - `OCI_SERVER_IP`
 - `OCI_SERVER_USER`
 - `OCI_SSH_KEY`
 
-O servidor deve ter Git, Docker com Compose, acesso de leitura ao repositório e um arquivo persistente `~/impression-track/.env`. O usuário SSH precisa executar `sudo docker compose` sem interação. O domínio público e TLS devem apontar para os serviços locais expostos pelo Compose.
+The server must have Git, Docker with Compose, read access to the repository, and a persistent `~/impression-track/.env` file. The SSH user must be able to run `sudo docker compose` non-interactively. The public domain and TLS termination must point to the local services exposed by Compose.
 
-## Estrutura principal
+## Project structure
 
 ```text
-.github/workflows/      CI e deploy em OCI
-api/                    Aplicação Laravel, migrations e testes
-config/nginx.conf       Nginx/FastCGI da API
-frontend/               Landing page e aplicação Vue
-data/                   Volume MySQL local ignorado pelo Git
-docker-compose.yml      Ambiente integrado
+.github/workflows/      CI and OCI deployment
+api/                    Laravel application, migrations, and tests
+config/nginx.conf       API Nginx/FastCGI configuration
+frontend/               Vue landing page and application
+data/                   Git-ignored local MySQL volume
+docker-compose.yml      Integrated environment
 ```
 
-As implementações PHP e WebSocket anteriores foram removidas. A fonte única do backend é `api/`, e o servidor realtime oficial é o Laravel Reverb.
+The previous PHP and WebSocket implementations have been removed. The single backend source is `api/`, and Laravel Reverb is the official real-time server.

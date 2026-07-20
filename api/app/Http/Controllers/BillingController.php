@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesWorkspace;
+use App\Models\Subscription;
 use App\Services\MercadoPagoClient;
 use App\Services\PremiumEntitlementService;
+use App\Services\WorkspacePlanNotifier;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
@@ -97,6 +99,48 @@ class BillingController extends Controller
             'payment_method_id' => $payment['payment_method_id'] ?? $data['payment_method_id'],
             'qr_code' => $transaction['qr_code'] ?? null,
             'qr_code_base64' => $transaction['qr_code_base64'] ?? null,
+        ]);
+    }
+
+    public function status(
+        Request $request,
+        string $paymentId,
+        MercadoPagoClient $client,
+        PremiumEntitlementService $entitlements,
+        WorkspacePlanNotifier $notifier,
+    ): JsonResponse {
+        $workspace = $this->workspace($request);
+        abort_unless($this->role($request, $workspace) === 'owner', 403, __('api.billing_owner'));
+
+        $subscription = Subscription::query()
+            ->where('workspace_id', $workspace->id)
+            ->where('provider', 'mercadopago')
+            ->where('provider_subscription_id', $paymentId)
+            ->firstOrFail();
+
+        if ($subscription->status === 'pending') {
+            try {
+                $subscription = $entitlements->syncPayment(
+                    $client->getPayment($paymentId),
+                    $subscription->provider_plan_id,
+                ) ?? $subscription;
+
+                if ($subscription->status !== 'pending') {
+                    $notifier->notify($subscription);
+                }
+            } catch (ConnectionException|RequestException) {
+                // Keep the local pending state and let the webhook or the next poll retry.
+            }
+        }
+
+        $workspace->refresh();
+        $plan = $workspace->planCode();
+
+        return response()->json([
+            'payment_id' => $paymentId,
+            'status' => $subscription->fresh()->status,
+            'plan' => $plan,
+            'limits' => config('plans.'.$plan),
         ]);
     }
 }

@@ -12,7 +12,12 @@ class WorkspaceInvitationNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(private Workspace $workspace, private string $acceptUrl, private string $locale = 'pt-BR') {}
+    public function __construct(
+        private Workspace $workspace,
+        private string $acceptUrl,
+        private string $messageLocale = 'pt-BR',
+        private ?string $recipientName = null,
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -21,10 +26,14 @@ class WorkspaceInvitationNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $locale = $this->locale === 'en' ? 'en' : 'pt_BR';
+        $locale = $this->messageLocale === 'en' ? 'en' : 'pt_BR';
+
+        $greeting = $this->recipientName
+            ? Lang::get('api.invitation_greeting_named', ['name' => $this->recipientName], $locale)
+            : Lang::get('api.invitation_greeting', [], $locale);
 
         return (new MailMessage)->subject(Lang::get('api.invitation_subject', ['workspace' => $this->workspace->name], $locale))
-            ->greeting(Lang::get('api.invitation_greeting', [], $locale))
+            ->greeting($greeting)
             ->line(Lang::get('api.invitation_line', [], $locale))
             ->action(Lang::get('api.invitation_action', [], $locale), $this->acceptUrl)
             ->line(Lang::get('api.invitation_expiration', [], $locale));

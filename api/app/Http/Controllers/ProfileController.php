@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesWorkspace;
+use App\Services\WorkspaceAccessService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -13,12 +14,31 @@ class ProfileController extends Controller
 {
     use ResolvesWorkspace;
 
-    public function show(Request $request): JsonResponse
+    public function show(Request $request, WorkspaceAccessService $access): JsonResponse
     {
         $user = $request->user();
         $workspace = $this->workspace($request);
         $membership = $workspace->members()->where('users.id', $user->id)->firstOrFail();
-        $subscription = $workspace->currentPremiumSubscription();
+        $permissions = $access->permissions($user, $workspace);
+        $subscription = $permissions['owner'] ? $workspace->currentPremiumSubscription() : null;
+        $workspaceData = [
+            ...$workspace->only(['id', 'name', 'slug', 'created_at']),
+            'role' => $membership->pivot->role,
+            'joined_at' => $membership->pivot->joined_at,
+            'permissions' => $permissions,
+        ];
+        if ($permissions['owner']) {
+            $workspaceData = [
+                ...$workspaceData,
+                'plan' => $workspace->planCode(),
+                'limits' => config('plans.'.$workspace->planCode()),
+                'usage' => [
+                    'campaigns' => $workspace->campaigns()->where('kind', 'standard')->whereNull('archived_at')->count(),
+                    'simulation_campaigns' => $workspace->campaigns()->where('kind', 'simulation')->whereNull('archived_at')->count(),
+                    'members' => $workspace->members()->count(),
+                ],
+            ];
+        }
 
         return response()->json(['data' => [
             'user' => [
@@ -27,18 +47,7 @@ class ProfileController extends Controller
                 'has_password' => $user->password !== null,
                 'providers' => $user->oauthIdentities()->pluck('provider')->values(),
             ],
-            'workspace' => [
-                ...$workspace->only(['id', 'name', 'slug', 'created_at']),
-                'plan' => $workspace->planCode(),
-                'role' => $membership->pivot->role,
-                'joined_at' => $membership->pivot->joined_at,
-                'limits' => config('plans.'.$workspace->planCode()),
-                'usage' => [
-                    'campaigns' => $workspace->campaigns()->where('kind', 'standard')->whereNull('archived_at')->count(),
-                    'simulation_campaigns' => $workspace->campaigns()->where('kind', 'simulation')->whereNull('archived_at')->count(),
-                    'members' => $workspace->members()->count(),
-                ],
-            ],
+            'workspace' => $workspaceData,
             'subscription' => $subscription ? [
                 ...$subscription->only(['provider', 'provider_plan_id', 'status']),
                 'current_period_start' => $subscription->current_period_start?->toIso8601String(),

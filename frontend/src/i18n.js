@@ -198,6 +198,114 @@ en.profile = {
   roles: { owner: 'Owner', admin: 'Administrator', member: 'Member' }, cycles: { monthly: 'Monthly', annual: 'Annual', premium: 'Premium' }, statuses: { active: 'Active', past_due: 'Grace period', pending: 'Pending', canceled: 'Canceled' },
 }
 
+Object.assign(pt.billing, {
+  pixCanceled: 'O pagamento Pix foi cancelado ou expirou. Gere um novo código para tentar novamente.',
+  confirmationDelayed: 'A confirmação está demorando mais que o esperado. Você pode manter esta tela aberta; o plano será atualizado quando o pagamento for confirmado.',
+})
+Object.assign(en.billing, {
+  pixCanceled: 'The Pix payment was canceled or expired. Create a new code to try again.',
+  confirmationDelayed: 'Confirmation is taking longer than expected. You can keep this page open; the plan will update when the payment is confirmed.',
+})
+
+Object.assign(pt.shell, { member: 'membro' })
+Object.assign(en.shell, { member: 'member' })
+Object.assign(pt.team, {
+  person: 'Pessoa',
+  createCampaigns: 'Criar campanhas',
+  viewMetrics: 'Visualizar métricas',
+  permissionsUpdated: 'Permissões atualizadas com sucesso.',
+  sending: 'Enviando…',
+  pendingConfirmation: 'Aguardando confirmação',
+  expiresAt: 'expira em {date}',
+  namePlaceholder: 'Nome (opcional)',
+  actions: 'Ações',
+  remove: 'Excluir',
+  removing: 'Excluindo…',
+  protected: 'Protegido',
+  cancelInvitation: 'Cancelar',
+  removeConfirm: 'Excluir {name} deste workspace?',
+  cancelConfirm: 'Cancelar o convite de {name}?',
+  memberRemoved: 'Membro removido com sucesso.',
+  invitationCanceled: 'Convite cancelado com sucesso.',
+})
+Object.assign(en.team, {
+  person: 'Person',
+  createCampaigns: 'Create campaigns',
+  viewMetrics: 'View metrics',
+  permissionsUpdated: 'Permissions updated successfully.',
+  sending: 'Sending…',
+  pendingConfirmation: 'Awaiting confirmation',
+  expiresAt: 'expires on {date}',
+  namePlaceholder: 'Name (optional)',
+  actions: 'Actions',
+  remove: 'Remove',
+  removing: 'Removing…',
+  protected: 'Protected',
+  cancelInvitation: 'Cancel',
+  removeConfirm: 'Remove {name} from this workspace?',
+  cancelConfirm: 'Cancel the invitation for {name}?',
+  memberRemoved: 'Member removed successfully.',
+  invitationCanceled: 'Invitation canceled successfully.',
+})
+Object.assign(pt.profile, { createCampaigns: 'Criação de campanhas', viewMetrics: 'Visualização de métricas' })
+Object.assign(en.profile, { createCampaigns: 'Campaign creation', viewMetrics: 'Metrics access' })
+Object.assign(pt.dashboard, {
+  workspaceOverview: 'VISÃO DO WORKSPACE',
+  restrictedTitle: 'Resumo operacional',
+  restrictedText: 'Seu acesso não inclui métricas de desempenho. Você ainda pode acompanhar a estrutura ativa do workspace.',
+  activeCampaignSummary: 'campanhas ativas no workspace',
+  adsTotal: 'ADS CADASTRADOS',
+  adsSummary: 'ads ativos ou disponíveis',
+})
+Object.assign(en.dashboard, {
+  workspaceOverview: 'WORKSPACE OVERVIEW',
+  restrictedTitle: 'Operational summary',
+  restrictedText: 'Your access does not include performance metrics. You can still review the active workspace structure.',
+  activeCampaignSummary: 'active campaigns in the workspace',
+  adsTotal: 'REGISTERED ADS',
+  adsSummary: 'active or available ads',
+})
+pt.verification = {
+  eyebrow: 'CONFIRME SEU E-MAIL',
+  title: 'Verifique sua caixa de entrada.',
+  text: 'Enviamos um link de verificação para {email}. As ferramentas do workspace serão liberadas após a confirmação.',
+  resend: 'Reenviar e-mail de verificação',
+  useAnotherAccount: 'Entrar com outra conta',
+}
+en.verification = {
+  eyebrow: 'CONFIRM YOUR EMAIL',
+  title: 'Check your inbox.',
+  text: 'We sent a verification link to {email}. Workspace tools will be enabled after confirmation.',
+  resend: 'Resend verification email',
+  useAnotherAccount: 'Use another account',
+}
+pt.invitation = {
+  eyebrow: 'CONVITE PARA EQUIPE',
+  title: 'Entre no workspace {workspace}.',
+  text: 'Este convite foi enviado para {email}. Crie sua conta ou entre para continuar.',
+  createCampaigns: 'Permissão para criar campanhas',
+  viewMetrics: 'Permissão para visualizar métricas',
+  accept: 'Aceitar convite',
+  createAndAccept: 'Criar conta e aceitar',
+  loginAndAccept: 'Entrar e aceitar',
+  accepted: 'Convite aceito. Bem-vindo ao workspace!',
+  invalidTitle: 'Convite indisponível',
+  invalidText: 'Este convite não existe, expirou ou já foi utilizado.',
+}
+en.invitation = {
+  eyebrow: 'TEAM INVITATION',
+  title: 'Join the {workspace} workspace.',
+  text: 'This invitation was sent to {email}. Create your account or sign in to continue.',
+  createCampaigns: 'Permission to create campaigns',
+  viewMetrics: 'Permission to view metrics',
+  accept: 'Accept invitation',
+  createAndAccept: 'Create account and accept',
+  loginAndAccept: 'Sign in and accept',
+  accepted: 'Invitation accepted. Welcome to the workspace!',
+  invalidTitle: 'Invitation unavailable',
+  invalidText: 'This invitation does not exist, has expired, or has already been used.',
+}
+
 const normalize = (locale) => SUPPORTED_LOCALES.includes(locale) ? locale : 'pt-BR'
 const initialLocale = normalize(localStorage.getItem(LOCALE_STORAGE_KEY))
 export const i18n = createI18n({ legacy: false, locale: initialLocale, fallbackLocale: 'pt-BR', messages: { 'pt-BR': pt, en } })

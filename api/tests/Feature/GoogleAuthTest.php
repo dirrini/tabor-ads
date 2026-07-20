@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Workspace;
+use App\Models\WorkspaceInvitation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
@@ -67,6 +68,40 @@ class GoogleAuthTest extends TestCase
             'provider' => 'google',
             'provider_user_id' => 'google-new-456',
         ]);
+    }
+
+    public function test_google_login_accepts_a_workspace_invitation_without_creating_another_workspace(): void
+    {
+        $owner = User::factory()->create();
+        $workspace = Workspace::create(['name' => 'Inviting Team', 'slug' => Str::uuid(), 'plan_override' => 'premium']);
+        $workspace->members()->attach($owner->id, ['role' => 'owner', 'joined_at' => now()]);
+        $token = Str::random(64);
+        WorkspaceInvitation::create([
+            'workspace_id' => $workspace->id,
+            'invited_by' => $owner->id,
+            'email' => 'google-invite@example.com',
+            'role' => 'member',
+            'can_create_campaigns' => false,
+            'can_view_metrics' => true,
+            'token' => hash('sha256', $token),
+            'expires_at' => now()->addDay(),
+        ]);
+        $this->mockGoogleUser('google-invited-789', 'google-invite@example.com', 'Invited Google User');
+
+        $this->withSession(['oauth_locale' => 'en', 'oauth_invitation_token' => $token])
+            ->get('/api/auth/google/callback')
+            ->assertRedirect(config('app.frontend_url').'/app/dashboard');
+
+        $user = User::where('email', 'google-invite@example.com')->firstOrFail();
+        $this->assertSame($workspace->id, $user->current_workspace_id);
+        $this->assertDatabaseCount('workspaces', 1);
+        $this->assertDatabaseHas('workspace_members', [
+            'workspace_id' => $workspace->id,
+            'user_id' => $user->id,
+            'can_create_campaigns' => false,
+            'can_view_metrics' => true,
+        ]);
+        $this->assertNotNull($user->email_verified_at);
     }
 
     private function workspaceFor(User $user): Workspace

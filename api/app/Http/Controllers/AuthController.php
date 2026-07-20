@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Workspace;
-use App\Models\WorkspaceInvitation;
+use App\Services\WorkspaceAccessService;
+use App\Services\WorkspaceInvitationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,10 +13,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Throwable;
 
 class AuthController extends Controller
 {
-    public function register(Request $request): JsonResponse
+    public function register(Request $request, WorkspaceInvitationService $invitations): JsonResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
@@ -26,26 +28,37 @@ class AuthController extends Controller
             'locale' => ['nullable', 'in:pt-BR,en'],
         ]);
 
-        $user = DB::transaction(function () use ($data) {
+        $invitation = ! empty($data['invitation_token']) ? $invitations->findValid($data['invitation_token']) : null;
+
+        $user = DB::transaction(function () use ($data, $invitation, $invitations) {
             $user = User::create(['name' => $data['name'], 'email' => strtolower($data['email']), 'password' => $data['password'], 'locale' => $data['locale'] ?? 'pt-BR']);
-            $invitation = ! empty($data['invitation_token']) ? WorkspaceInvitation::where('token', hash('sha256', $data['invitation_token']))
-                ->where('email', strtolower($data['email']))->whereNull('accepted_at')->where('expires_at', '>', now())->first() : null;
             if ($invitation) {
-                $workspace = Workspace::findOrFail($invitation->workspace_id);
-                $workspace->members()->attach($user->id, ['role' => $invitation->role, 'joined_at' => now()]);
-                $invitation->update(['accepted_at' => now()]);
+                $invitations->accept($user, $invitation);
             } else {
                 $workspaceName = $data['workspace_name'] ?? null;
                 $workspace = Workspace::create(['name' => $workspaceName ?: $data['name'].' Workspace', 'slug' => Str::slug($workspaceName ?: $data['name']).'-'.Str::lower(Str::random(6))]);
-                $workspace->members()->attach($user->id, ['role' => 'owner', 'joined_at' => now()]);
+                $workspace->members()->attach($user->id, [
+                    'role' => 'owner',
+                    'can_create_campaigns' => true,
+                    'can_view_metrics' => true,
+                    'joined_at' => now(),
+                ]);
+                $user->update(['current_workspace_id' => $workspace->id]);
             }
-            $user->update(['current_workspace_id' => $workspace->id]);
 
             return $user;
         });
 
         Auth::login($user);
         $request->session()->regenerate();
+
+        if (! $user->hasVerifiedEmail()) {
+            try {
+                $user->sendEmailVerificationNotification();
+            } catch (Throwable $error) {
+                report($error);
+            }
+        }
 
         return response()->json($this->payload($user), 201);
     }
@@ -88,10 +101,14 @@ class AuthController extends Controller
     private function payload(User $user): array
     {
         $workspace = $user->currentWorkspace();
+        $permissions = $workspace ? app(WorkspaceAccessService::class)->permissions($user, $workspace) : null;
 
-        return ['user' => $user->only(['id', 'name', 'email', 'locale']), 'workspace' => $workspace ? [
+        return ['user' => [
+            ...$user->only(['id', 'name', 'email', 'locale']),
+            'email_verified' => $user->hasVerifiedEmail(),
+        ], 'workspace' => $workspace ? [
             'id' => $workspace->id, 'name' => $workspace->name, 'slug' => $workspace->slug,
-            'plan' => $workspace->planCode(), 'role' => $workspace->members()->where('users.id', $user->id)->first()->pivot->role,
+            'plan' => $workspace->planCode(), 'role' => $permissions['role'], 'permissions' => $permissions,
             'limits' => config('plans.'.$workspace->planCode()),
         ] : null];
     }

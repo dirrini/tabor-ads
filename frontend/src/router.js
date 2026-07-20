@@ -8,17 +8,21 @@ import CampaignsView from './views/CampaignsView.vue'
 import TeamView from './views/TeamView.vue'
 import BillingView from './views/BillingView.vue'
 import ProfileView from './views/ProfileView.vue'
+import VerifyEmailView from './views/VerifyEmailView.vue'
+import InvitationView from './views/InvitationView.vue'
 
 const router = createRouter({ history: createWebHistory(), routes: [
   { path: '/', component: LandingView },
   { path: '/login', component: AuthView, meta: { guest: true } },
   { path: '/register', component: AuthView, meta: { guest: true } },
+  { path: '/verify-email', name: 'verify-email', component: VerifyEmailView, meta: { auth: true, allowUnverified: true } },
+  { path: '/invite/:token', name: 'invitation', component: InvitationView },
   { path: '/app', component: AppShell, meta: { auth: true }, children: [
     { path: '', redirect: '/app/dashboard' },
     { path: 'dashboard', component: DashboardView },
-    { path: 'campaigns', component: CampaignsView },
-    { path: 'team', component: TeamView },
-    { path: 'billing', component: BillingView },
+    { path: 'campaigns', component: CampaignsView, meta: { campaignPermission: true } },
+    { path: 'team', component: TeamView, meta: { owner: true } },
+    { path: 'billing', component: BillingView, meta: { owner: true } },
     { path: 'profile', component: ProfileView },
   ]},
 ] })
@@ -29,6 +33,10 @@ router.beforeEach(async (to) => {
   const auth = useAuthStore()
   await auth.load()
   if (to.meta.auth && !auth.authenticated) return { path: '/login', query: { redirect: to.fullPath } }
+  if (!auth.verified && !to.meta.allowUnverified) return { name: 'verify-email' }
+  if (auth.verified && to.name === 'verify-email') return { path: '/app/dashboard' }
+  if (to.meta.owner && !auth.owner) return { path: '/app/dashboard' }
+  if (to.meta.campaignPermission && !auth.canCreateCampaigns) return { path: '/app/dashboard' }
 })
 
 export default router

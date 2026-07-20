@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\ResolvesWorkspace;
 use App\Models\Ad;
 use App\Models\Campaign;
 use App\Services\PlanService;
+use App\Services\WorkspaceAccessService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +16,11 @@ class AdController extends Controller
 {
     use ResolvesWorkspace;
 
-    public function store(Request $request, Campaign $campaign, PlanService $plans): JsonResponse
+    public function store(Request $request, Campaign $campaign, PlanService $plans, WorkspaceAccessService $access): JsonResponse
     {
-        abort_unless($campaign->workspace_id === $this->workspace($request)->id, 404);
+        $workspace = $this->workspace($request);
+        abort_unless($campaign->workspace_id === $workspace->id, 404);
+        $access->assertCanCreateCampaigns($request->user(), $workspace);
         $data = $request->validate(['name' => ['required', 'string', 'max:120'], 'destination_url' => ['nullable', 'url', 'max:2000']]);
         $ad = DB::transaction(function () use ($campaign, $data, $plans) {
             $campaign = Campaign::with('workspace')->lockForUpdate()->findOrFail($campaign->id);
@@ -29,10 +32,12 @@ class AdController extends Controller
         return response()->json(['data' => $ad, 'pixel_url' => url('/t/'.$ad->tracking_key.'.gif')], 201);
     }
 
-    public function archive(Request $request, Ad $ad): JsonResponse
+    public function archive(Request $request, Ad $ad, WorkspaceAccessService $access): JsonResponse
     {
         $ad->load('campaign');
-        abort_unless($ad->campaign->workspace_id === $this->workspace($request)->id, 404);
+        $workspace = $this->workspace($request);
+        abort_unless($ad->campaign->workspace_id === $workspace->id, 404);
+        $access->assertCanCreateCampaigns($request->user(), $workspace);
         $ad->update(['status' => 'archived', 'archived_at' => now()]);
 
         return response()->json(['message' => __('api.ad_archived')]);

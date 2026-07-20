@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Events\WorkspacePlanUpdated;
 use App\Models\Ad;
 use App\Models\Campaign;
+use App\Models\Subscription;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Services\MercadoPagoClient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -30,6 +33,7 @@ class TrackingAndBillingTest extends TestCase
 
     public function test_payment_webhooks_are_idempotent_and_activate_premium(): void
     {
+        Event::fake([WorkspacePlanUpdated::class]);
         $workspace = Workspace::create(['name' => 'Acme', 'slug' => 'acme']);
         config(['mercadopago.access_token' => 'TEST-token']);
         Http::fake(['https://api.mercadopago.com/v1/payments/123' => Http::response([
@@ -46,7 +50,73 @@ class TrackingAndBillingTest extends TestCase
         $this->assertDatabaseHas('subscriptions', ['provider_subscription_id' => '123', 'provider_plan_id' => 'annual']);
         $this->assertTrue(now()->addMonths(11)->lt($workspace->subscriptions()->first()->current_period_end));
         $this->assertSame('premium', $workspace->fresh()->planCode());
+        Event::assertDispatched(WorkspacePlanUpdated::class, fn (WorkspacePlanUpdated $event) => $event->workspace->is($workspace));
         Http::assertSentCount(1);
+    }
+
+    public function test_owner_can_poll_a_pix_payment_and_refresh_the_workspace_plan(): void
+    {
+        Event::fake([WorkspacePlanUpdated::class]);
+        config(['mercadopago.access_token' => 'TEST-token']);
+        $workspace = Workspace::create(['name' => 'Acme', 'slug' => 'acme']);
+        $user = User::factory()->create(['current_workspace_id' => $workspace->id]);
+        $workspace->members()->attach($user->id, ['role' => 'owner', 'joined_at' => now()]);
+        Subscription::create([
+            'workspace_id' => $workspace->id,
+            'provider' => 'mercadopago',
+            'provider_subscription_id' => '789',
+            'provider_plan_id' => 'monthly',
+            'plan_code' => 'premium',
+            'status' => 'pending',
+        ]);
+        Http::fake(['https://api.mercadopago.com/v1/payments/789' => Http::response([
+            'id' => 789,
+            'status' => 'approved',
+            'external_reference' => 'workspace:'.$workspace->id,
+            'metadata' => ['workspace_id' => $workspace->id, 'billing_cycle' => 'monthly'],
+        ])]);
+
+        $this->actingAs($user)
+            ->getJson('/api/billing/payments/789/status')
+            ->assertOk()
+            ->assertJsonPath('payment_id', '789')
+            ->assertJsonPath('status', 'active')
+            ->assertJsonPath('plan', 'premium')
+            ->assertJsonPath('limits.realtime', true);
+
+        $this->assertDatabaseHas('subscriptions', ['provider_subscription_id' => '789', 'status' => 'active']);
+        Event::assertDispatched(WorkspacePlanUpdated::class);
+        Http::assertSentCount(1);
+    }
+
+    public function test_member_cannot_poll_a_workspace_payment(): void
+    {
+        $workspace = Workspace::create(['name' => 'Acme', 'slug' => 'acme']);
+        $user = User::factory()->create(['current_workspace_id' => $workspace->id]);
+        $workspace->members()->attach($user->id, ['role' => 'member', 'joined_at' => now()]);
+        Subscription::create([
+            'workspace_id' => $workspace->id,
+            'provider' => 'mercadopago',
+            'provider_subscription_id' => '790',
+            'provider_plan_id' => 'monthly',
+            'plan_code' => 'premium',
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($user)->getJson('/api/billing/payments/790/status')->assertForbidden();
+    }
+
+    public function test_only_workspace_owner_can_authorize_the_private_billing_channel(): void
+    {
+        $workspace = Workspace::create(['name' => 'Acme', 'slug' => 'acme']);
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $workspace->members()->attach($owner->id, ['role' => 'owner', 'joined_at' => now()]);
+        $workspace->members()->attach($member->id, ['role' => 'member', 'joined_at' => now()]);
+        $payload = ['socket_id' => '1234.5678', 'channel_name' => 'private-workspaces.'.$workspace->id.'.billing'];
+
+        $this->actingAs($owner)->postJson('/broadcasting/auth', $payload)->assertOk();
+        $this->actingAs($member)->postJson('/broadcasting/auth', $payload)->assertForbidden();
     }
 
     public function test_transparent_checkout_creates_a_payment_without_trusting_the_frontend_amount(): void
