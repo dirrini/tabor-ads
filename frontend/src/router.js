@@ -10,9 +10,19 @@ import BillingView from './views/BillingView.vue'
 import ProfileView from './views/ProfileView.vue'
 import VerifyEmailView from './views/VerifyEmailView.vue'
 import InvitationView from './views/InvitationView.vue'
+import LegalView from './views/LegalView.vue'
 
-const router = createRouter({ history: createWebHistory(), routes: [
+const router = createRouter({
+  history: createWebHistory(),
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    if (to.hash) return { el: to.hash, behavior: 'smooth' }
+    return { top: 0 }
+  },
+  routes: [
   { path: '/', component: LandingView },
+  { path: '/privacy', name: 'privacy', component: LegalView, props: { document: 'privacy' } },
+  { path: '/terms', name: 'terms', component: LegalView, props: { document: 'terms' } },
   { path: '/login', component: AuthView, meta: { guest: true } },
   { path: '/register', component: AuthView, meta: { guest: true } },
   { path: '/verify-email', name: 'verify-email', component: VerifyEmailView, meta: { auth: true, allowUnverified: true } },
@@ -25,7 +35,8 @@ const router = createRouter({ history: createWebHistory(), routes: [
     { path: 'billing', component: BillingView, meta: { owner: true } },
     { path: 'profile', component: ProfileView },
   ]},
-] })
+  ],
+})
 
 router.beforeEach(async (to) => {
   if (!to.meta.auth) return
