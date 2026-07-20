@@ -25,10 +25,10 @@
         </div>
       </div>
       <nav>
-        <RouterLink to="/app/dashboard"><span>⌁</span> {{ t('shell.dashboard') }}</RouterLink>
-        <RouterLink v-if="auth.canCreateCampaigns" to="/app/campaigns"><span>◫</span> {{ t('shell.campaigns') }}</RouterLink>
-        <RouterLink v-if="auth.owner" to="/app/team"><span>♙</span> {{ t('shell.team') }}</RouterLink>
-        <RouterLink v-if="auth.owner" to="/app/billing"><span>◇</span> {{ t('shell.billing') }}</RouterLink>
+        <RouterLink to="/app/dashboard"><AppIcon name="dashboard" /> {{ t('shell.dashboard') }}</RouterLink>
+        <RouterLink v-if="auth.canCreateCampaigns" to="/app/campaigns"><AppIcon name="campaigns" /> {{ t('shell.campaigns') }}</RouterLink>
+        <RouterLink v-if="auth.owner" to="/app/team"><AppIcon name="team" /> {{ t('shell.team') }}</RouterLink>
+        <RouterLink v-if="auth.owner" to="/app/billing"><AppIcon name="billing" /> {{ t('shell.billing') }}</RouterLink>
       </nav>
       <LocaleSwitcher persist class="app-locale" />
       <RouterLink class="mobile-profile-button" to="/app/profile" :title="t('shell.profile')" :aria-label="t('shell.profile')">
@@ -36,7 +36,7 @@
       </RouterLink>
       <div class="sidebar-foot">
         <RouterLink class="user-mini" to="/app/profile"><span>{{ userInitials }}</span><div><b>{{ auth.user?.name }}</b><small>{{ auth.user?.email }}</small></div></RouterLink>
-        <button :title="t('shell.logout')" @click="logout">↗</button>
+        <button :title="t('shell.logout')" :aria-label="t('shell.logout')" @click="logout"><AppIcon name="logout" /></button>
       </div>
     </aside>
     <main class="app-main"><RouterView :key="auth.workspace?.id" /></main>
@@ -52,6 +52,7 @@ import { useToastStore } from '../stores/toast'
 import { createEcho } from '../lib/echo'
 import LocaleSwitcher from '../components/LocaleSwitcher.vue'
 import BrandLogo from '../components/BrandLogo.vue'
+import AppIcon from '../components/AppIcon.vue'
 
 const auth = useAuthStore()
 const toast = useToastStore()
