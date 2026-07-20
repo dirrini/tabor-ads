@@ -19,6 +19,24 @@ class TrackingAndBillingTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_public_billing_plans_use_the_server_configuration(): void
+    {
+        config([
+            'mercadopago.currency' => 'BRL',
+            'mercadopago.premium_plans.monthly.amount' => 2.50,
+            'mercadopago.premium_plans.annual.amount' => 24.90,
+        ]);
+
+        $response = $this->getJson('/api/billing/plans')
+            ->assertOk()
+            ->assertJsonPath('currency', 'BRL')
+            ->assertJsonPath('plans.monthly.amount', 2.5)
+            ->assertJsonPath('plans.annual.amount', 24.9);
+
+        $this->assertArrayNotHasKey('public_key', $response->json());
+        $this->assertArrayNotHasKey('payer', $response->json());
+    }
+
     public function test_tracking_pixel_records_an_impression(): void
     {
         $user = User::factory()->create();

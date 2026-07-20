@@ -18,16 +18,19 @@ class BillingController extends Controller
 {
     use ResolvesWorkspace;
 
+    public function plans(): JsonResponse
+    {
+        return response()->json([
+            'currency' => config('mercadopago.currency', 'BRL'),
+            'plans' => $this->planSummaries(),
+        ]);
+    }
+
     public function configuration(Request $request): JsonResponse
     {
         $workspace = $this->workspace($request);
         abort_unless($this->role($request, $workspace) === 'owner', 403, __('api.billing_owner'));
-        $plans = collect(config('mercadopago.premium_plans'))->map(fn (array $plan) => [
-            'label' => $plan['label'],
-            'amount' => (float) $plan['amount'],
-            'duration_months' => (int) $plan['duration_months'],
-            'max_installments' => (int) $plan['max_installments'],
-        ]);
+        $plans = $this->planSummaries();
 
         return response()->json([
             'public_key' => config('mercadopago.public_key'),
@@ -37,6 +40,16 @@ class BillingController extends Controller
             'configured' => filled(config('mercadopago.public_key'))
                 && filled(config('mercadopago.access_token'))
                 && $plans->every(fn (array $plan) => $plan['amount'] > 0),
+        ]);
+    }
+
+    private function planSummaries()
+    {
+        return collect(config('mercadopago.premium_plans'))->map(fn (array $plan) => [
+            'label' => $plan['label'],
+            'amount' => (float) $plan['amount'],
+            'duration_months' => (int) $plan['duration_months'],
+            'max_installments' => (int) $plan['max_installments'],
         ]);
     }
 

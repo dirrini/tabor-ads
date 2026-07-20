@@ -83,4 +83,15 @@ class ProfileController extends Controller
 
         return response()->json(['message' => __('api.password_updated')]);
     }
+
+    public function update(Request $request): JsonResponse
+    {
+        $data = $request->validate(['name' => ['required', 'string', 'max:120']]);
+        $request->user()->update(['name' => $data['name']]);
+
+        return response()->json([
+            'message' => __('api.profile_updated'),
+            'user' => $request->user()->only(['id', 'name', 'email', 'locale']),
+        ]);
+    }
 }

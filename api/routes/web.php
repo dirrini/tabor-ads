@@ -26,6 +26,7 @@ Route::prefix('api')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
     Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
     Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
+    Route::get('/billing/plans', [BillingController::class, 'plans'])->middleware('throttle:60,1');
     Route::get('/auth/verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])
         ->middleware(['signed', 'throttle:12,1'])
         ->name('verification.verify');
@@ -40,7 +41,10 @@ Route::prefix('api')->group(function () {
 
         Route::middleware('verified')->group(function () {
             Route::get('/profile', [ProfileController::class, 'show']);
+            Route::patch('/profile', [ProfileController::class, 'update']);
             Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:6,1');
+            Route::post('/workspaces', [WorkspaceController::class, 'store'])->middleware('throttle:10,1');
+            Route::put('/workspaces/current', [WorkspaceController::class, 'switch'])->middleware('throttle:30,1');
             Route::get('/workspace', [WorkspaceController::class, 'show']);
             Route::post('/workspace/invitations', [WorkspaceController::class, 'invite']);
             Route::delete('/workspace/invitations/{invitation}', [WorkspaceController::class, 'cancelInvitation']);

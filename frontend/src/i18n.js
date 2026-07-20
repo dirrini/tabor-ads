@@ -10,7 +10,7 @@ const pt = {
     hero: { eyebrow: 'Analytics de anúncios, sem ruído', title: 'Veja cada impressão.', emphasis: 'Decida no momento certo.', description: 'Um pixel leve, métricas claras e acompanhamento em tempo real para campanhas que não podem esperar pelo relatório de amanhã.', start: 'Começar gratuitamente', how: 'Ver como funciona', trust1: 'Sem cartão no plano Free', trust2: 'Setup em minutos', trust3: 'Dados isolados por equipe', impressions: 'IMPRESSÕES HOJE', live: '● AO VIVO', activeCampaign: 'campanha ativa', newImpression: 'Nova impressão', now: 'São Paulo · agora' },
     features: { eyebrow: 'O ESSENCIAL, MUITO BEM FEITO', title: 'Do pixel à decisão em uma tela.', trackingTitle: 'Tracking leve', trackingText: 'Um pixel transparente por anúncio. Integre sem pesar sua página e comece a coletar em minutos.', campaignsTitle: 'Campanhas organizadas', campaignsText: 'Agrupe múltiplos anúncios, compare criativos e preserve todo o histórico da sua operação.', realtimeTitle: 'Realtime de verdade', realtimeText: 'Canais privados por workspace entregam cada nova impressão ao dashboard Premium.' },
     how: { eyebrow: 'SIMPLES POR PROJETO', title: 'Publique. Colete.\nEntenda.', step1Title: 'Crie sua campanha', step1Text: 'Organize anúncios e destinos em um workspace seguro.', step2Title: 'Instale o pixel', step2Text: 'Copie o snippet exclusivo para onde seu anúncio aparece.', step3Title: 'Acompanhe o impacto', step3Text: 'Leia tendências, navegadores e volume em um painel claro.' },
-    pricing: { eyebrow: 'PLANOS TRANSPARENTES', title: 'Comece pequeno. Cresça sem trocar de ferramenta.', freeText: 'Para validar campanhas e conhecer sua audiência.', monthly: 'PREMIUM MENSAL', monthlyText: 'Flexibilidade mensal com todos os recursos Premium.', annual: 'PREMIUM ANUAL', annualText: 'Economize no ano e pague por Pix ou cartão.', best: 'MELHOR VALOR', campaigns3: '3 campanhas', campaigns20: '20 campanhas', oneAd: '1 anúncio por campanha', tenAds: '10 anúncios por campanha', static: 'Dashboard sob demanda', realtime: 'Analytics em tempo real', oneMember: '1 membro', fiveMembers: 'Até 5 membros', allPremium: 'Todos os recursos Premium', singlePayment: 'Pagamento único de R$ 9,90', pixCard: 'Pix ou cartão de crédito', twelveMonths: '12 meses de acesso', create: 'Criar workspace', chooseMonthly: 'Escolher mensal', chooseAnnual: 'Escolher anual' },
+    pricing: { eyebrow: 'PLANOS TRANSPARENTES', title: 'Comece pequeno. Cresça sem trocar de ferramenta.', freeText: 'Para validar campanhas e conhecer sua audiência.', monthly: 'PREMIUM MENSAL', monthlyText: 'Flexibilidade mensal com todos os recursos Premium.', annual: 'PREMIUM ANUAL', annualText: 'Economize no ano e pague por Pix ou cartão.', best: 'MELHOR VALOR', campaigns3: '3 campanhas', campaigns20: '20 campanhas', oneAd: '1 anúncio por campanha', tenAds: '10 anúncios por campanha', static: 'Dashboard sob demanda', realtime: 'Analytics em tempo real', oneMember: '1 membro', fiveMembers: 'Até 5 membros', allPremium: 'Todos os recursos Premium', singlePayment: 'Pagamento único de {amount}', pixCard: 'Pix ou cartão de crédito', twelveMonths: '12 meses de acesso', create: 'Criar workspace', chooseMonthly: 'Escolher mensal', chooseAnnual: 'Escolher anual' },
     footer: '© 2026. Analytics feito para campanhas em movimento.'
   },
   auth: { registerEyebrow: 'SEU WORKSPACE COMEÇA AQUI', loginEyebrow: 'BEM-VINDO DE VOLTA', registerTitle: 'Crie sua conta.', loginTitle: 'Entre na sua conta.', registerText: 'Três campanhas gratuitas para colocar seus dados em movimento.', loginText: 'Continue de onde sua equipe parou.', google: 'Continuar com Google', divider: 'ou use seu e-mail', name: 'Nome', namePlaceholder: 'Seu nome', workspace: 'Nome do workspace', workspacePlaceholder: 'Minha empresa', emailPlaceholder: 'voce@empresa.com', passwordPlaceholder: 'Mínimo de 8 caracteres', confirm: 'Confirmar senha', create: 'Criar workspace', login: 'Entrar', haveAccount: 'Já possui uma conta?', noAccount: 'Ainda não possui conta?', createFree: 'Criar grátis' },
@@ -28,7 +28,7 @@ const en = {
     hero: { eyebrow: 'Ad analytics, without the noise', title: 'See every impression.', emphasis: 'Decide at the right time.', description: 'A lightweight pixel, clear metrics, and real-time monitoring for campaigns that cannot wait for tomorrow’s report.', start: 'Start for free', how: 'See how it works', trust1: 'No card required for Free', trust2: 'Set up in minutes', trust3: 'Team-isolated data', impressions: 'IMPRESSIONS TODAY', live: '● LIVE', activeCampaign: 'active campaign', newImpression: 'New impression', now: 'São Paulo · now' },
     features: { eyebrow: 'THE ESSENTIALS, DONE RIGHT', title: 'From pixel to decision on one screen.', trackingTitle: 'Lightweight tracking', trackingText: 'One transparent pixel per ad. Integrate without slowing down your page and start collecting in minutes.', campaignsTitle: 'Organized campaigns', campaignsText: 'Group multiple ads, compare creatives, and keep your entire operation history.', realtimeTitle: 'True real time', realtimeText: 'Private workspace channels deliver every new impression to the Premium dashboard.' },
     how: { eyebrow: 'SIMPLE BY DESIGN', title: 'Publish. Collect.\nUnderstand.', step1Title: 'Create your campaign', step1Text: 'Organize ads and destinations in a secure workspace.', step2Title: 'Install the pixel', step2Text: 'Copy the unique snippet to wherever your ad appears.', step3Title: 'Track the impact', step3Text: 'Read trends, browsers, and volume in a clear dashboard.' },
-    pricing: { eyebrow: 'TRANSPARENT PRICING', title: 'Start small. Grow without switching tools.', freeText: 'Validate campaigns and learn about your audience.', monthly: 'MONTHLY PREMIUM', monthlyText: 'Monthly flexibility with every Premium feature.', annual: 'ANNUAL PREMIUM', annualText: 'Save throughout the year and pay with Pix or card.', best: 'BEST VALUE', campaigns3: '3 campaigns', campaigns20: '20 campaigns', oneAd: '1 ad per campaign', tenAds: '10 ads per campaign', static: 'On-demand dashboard', realtime: 'Real-time analytics', oneMember: '1 member', fiveMembers: 'Up to 5 members', allPremium: 'All Premium features', singlePayment: 'One-time payment of R$ 9.90', pixCard: 'Pix or credit card', twelveMonths: '12 months of access', create: 'Create workspace', chooseMonthly: 'Choose monthly', chooseAnnual: 'Choose annual' },
+    pricing: { eyebrow: 'TRANSPARENT PRICING', title: 'Start small. Grow without switching tools.', freeText: 'Validate campaigns and learn about your audience.', monthly: 'MONTHLY PREMIUM', monthlyText: 'Monthly flexibility with every Premium feature.', annual: 'ANNUAL PREMIUM', annualText: 'Save throughout the year and pay with Pix or card.', best: 'BEST VALUE', campaigns3: '3 campaigns', campaigns20: '20 campaigns', oneAd: '1 ad per campaign', tenAds: '10 ads per campaign', static: 'On-demand dashboard', realtime: 'Real-time analytics', oneMember: '1 member', fiveMembers: 'Up to 5 members', allPremium: 'All Premium features', singlePayment: 'One-time payment of {amount}', pixCard: 'Pix or credit card', twelveMonths: '12 months of access', create: 'Create workspace', chooseMonthly: 'Choose monthly', chooseAnnual: 'Choose annual' },
     footer: '© 2026. Analytics built for campaigns in motion.'
   },
   auth: { registerEyebrow: 'YOUR WORKSPACE STARTS HERE', loginEyebrow: 'WELCOME BACK', registerTitle: 'Create your account.', loginTitle: 'Log in to your account.', registerText: 'Three free campaigns to get your data moving.', loginText: 'Continue where your team left off.', google: 'Continue with Google', divider: 'or use your email', name: 'Name', namePlaceholder: 'Your name', workspace: 'Workspace name', workspacePlaceholder: 'My company', emailPlaceholder: 'you@company.com', passwordPlaceholder: 'At least 8 characters', confirm: 'Confirm password', create: 'Create workspace', login: 'Log in', haveAccount: 'Already have an account?', noAccount: 'Don’t have an account yet?', createFree: 'Create for free' },
@@ -305,6 +305,41 @@ en.invitation = {
   invalidTitle: 'Invitation unavailable',
   invalidText: 'This invitation does not exist, has expired, or has already been used.',
 }
+
+pt.workspaceSwitcher = {
+  title: 'Seus workspaces',
+}
+en.workspaceSwitcher = {
+  title: 'Your workspaces',
+}
+Object.assign(pt.profile, {
+  workspaces: 'WORKSPACES',
+  manageWorkspaces: 'Seus ambientes de trabalho',
+  workspacesText: 'Crie um workspace independente ou alterne entre os ambientes dos quais você participa.',
+  newWorkspace: '+ Novo workspace',
+  workspaceName: 'Nome do workspace',
+  workspaceNamePlaceholder: 'Ex.: Minha nova empresa',
+  creatingWorkspace: 'Criando…',
+  createWorkspace: 'Criar workspace',
+  currentWorkspace: 'Workspace atual',
+  switchWorkspace: 'Acessar workspace',
+  saveName: 'Salvar nome',
+  savingName: 'Salvando…',
+})
+Object.assign(en.profile, {
+  workspaces: 'WORKSPACES',
+  manageWorkspaces: 'Your work environments',
+  workspacesText: 'Create an independent workspace or switch between the environments you belong to.',
+  newWorkspace: '+ New workspace',
+  workspaceName: 'Workspace name',
+  workspaceNamePlaceholder: 'E.g. My new company',
+  creatingWorkspace: 'Creating…',
+  createWorkspace: 'Create workspace',
+  currentWorkspace: 'Current workspace',
+  switchWorkspace: 'Open workspace',
+  saveName: 'Save name',
+  savingName: 'Saving…',
+})
 
 pt.legal = {
   footerNavigation: 'Links legais',

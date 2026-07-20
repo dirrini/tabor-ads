@@ -3,7 +3,7 @@ import { api } from '../lib/api'
 import { setAppLocale } from '../i18n'
 
 export const useAuthStore = defineStore('auth', {
-  state: () => ({ user: null, workspace: null, loaded: false, lastBillingUpdate: null }),
+  state: () => ({ user: null, workspace: null, workspaces: [], loaded: false, lastBillingUpdate: null }),
   getters: {
     authenticated: (state) => Boolean(state.user),
     verified: (state) => Boolean(state.user?.email_verified),
@@ -39,6 +39,21 @@ export const useAuthStore = defineStore('auth', {
     },
     async login(payload) { Object.assign(this, await api('/api/auth/login', { method: 'POST', body: JSON.stringify(payload) })); if (this.user?.locale) setAppLocale(this.user.locale); this.loaded = true },
     async register(payload) { Object.assign(this, await api('/api/auth/register', { method: 'POST', body: JSON.stringify(payload) })); if (this.user?.locale) setAppLocale(this.user.locale); this.loaded = true },
+    async switchWorkspace(workspaceId) {
+      const result = await api('/api/workspaces/current', { method: 'PUT', body: JSON.stringify({ workspace_id: workspaceId }) })
+      await this.refresh()
+      return result
+    },
+    async createWorkspace(name) {
+      const result = await api('/api/workspaces', { method: 'POST', body: JSON.stringify({ name }) })
+      await this.refresh()
+      return result
+    },
+    async updateName(name) {
+      const result = await api('/api/profile', { method: 'PATCH', body: JSON.stringify({ name }) })
+      this.user = { ...this.user, ...result.user }
+      return result
+    },
     async updateLocale(locale) {
       const previous = this.user?.locale
       setAppLocale(locale)
