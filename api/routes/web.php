@@ -5,7 +5,9 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CampaignController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\MercadoPagoWebhookController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SimulationController;
@@ -24,30 +26,41 @@ Route::prefix('api')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
     Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
     Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
+    Route::get('/auth/verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:12,1'])
+        ->name('verification.verify');
+    Route::get('/invitations/{token}', [InvitationController::class, 'show'])->middleware('throttle:30,1');
 
     Route::middleware('auth')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::patch('/auth/preferences', [AuthController::class, 'preferences']);
-        Route::get('/profile', [ProfileController::class, 'show']);
-        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:6,1');
-        Route::post('/auth/logout', [AuthController::class, 'logout']);
-        Route::get('/workspace', [WorkspaceController::class, 'show']);
-        Route::post('/workspace/invitations', [WorkspaceController::class, 'invite']);
+        Route::post('/auth/email/verification-notification', [EmailVerificationController::class, 'resend'])->middleware('throttle:6,1');
         Route::post('/workspace/invitations/{token}/accept', [WorkspaceController::class, 'accept']);
-        Route::get('/campaigns', [CampaignController::class, 'index']);
-        Route::post('/campaigns', [CampaignController::class, 'store']);
-        Route::patch('/campaigns/{campaign}', [CampaignController::class, 'update']);
-        Route::delete('/campaigns/{campaign}', [CampaignController::class, 'archive']);
-        Route::post('/campaigns/{campaign}/ads', [AdController::class, 'store']);
-        Route::delete('/ads/{ad}', [AdController::class, 'archive']);
-        Route::get('/analytics', AnalyticsController::class)->middleware('throttle:60,1');
-        Route::post('/simulation/start', [SimulationController::class, 'start'])->middleware('throttle:6,1');
-        Route::post('/simulation/tick', [SimulationController::class, 'tick'])->middleware('throttle:240,1');
-        Route::post('/simulation/stop', [SimulationController::class, 'stop'])->middleware('throttle:30,1');
-        Route::get('/billing/configuration', [BillingController::class, 'configuration']);
-        Route::post('/billing/payment', [BillingController::class, 'payment'])->middleware('throttle:6,1');
-        Route::get('/billing/payments/{paymentId}/status', [BillingController::class, 'status'])
-            ->where('paymentId', '[0-9]+')
-            ->middleware('throttle:20,1');
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+        Route::middleware('verified')->group(function () {
+            Route::get('/profile', [ProfileController::class, 'show']);
+            Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:6,1');
+            Route::get('/workspace', [WorkspaceController::class, 'show']);
+            Route::post('/workspace/invitations', [WorkspaceController::class, 'invite']);
+            Route::delete('/workspace/invitations/{invitation}', [WorkspaceController::class, 'cancelInvitation']);
+            Route::patch('/workspace/members/{member}/permissions', [WorkspaceController::class, 'updatePermissions']);
+            Route::delete('/workspace/members/{member}', [WorkspaceController::class, 'removeMember']);
+            Route::get('/campaigns', [CampaignController::class, 'index']);
+            Route::post('/campaigns', [CampaignController::class, 'store']);
+            Route::patch('/campaigns/{campaign}', [CampaignController::class, 'update']);
+            Route::delete('/campaigns/{campaign}', [CampaignController::class, 'archive']);
+            Route::post('/campaigns/{campaign}/ads', [AdController::class, 'store']);
+            Route::delete('/ads/{ad}', [AdController::class, 'archive']);
+            Route::get('/analytics', AnalyticsController::class)->middleware('throttle:60,1');
+            Route::post('/simulation/start', [SimulationController::class, 'start'])->middleware('throttle:6,1');
+            Route::post('/simulation/tick', [SimulationController::class, 'tick'])->middleware('throttle:240,1');
+            Route::post('/simulation/stop', [SimulationController::class, 'stop'])->middleware('throttle:30,1');
+            Route::get('/billing/configuration', [BillingController::class, 'configuration']);
+            Route::post('/billing/payment', [BillingController::class, 'payment'])->middleware('throttle:6,1');
+            Route::get('/billing/payments/{paymentId}/status', [BillingController::class, 'status'])
+                ->where('paymentId', '[0-9]+')
+                ->middleware('throttle:20,1');
+        });
     });
 });

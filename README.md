@@ -6,8 +6,9 @@ Tabor Ads is an ad analytics SaaS platform. It combines pixel-based impression t
 
 - Responsive public landing page with plan details.
 - Sign-up and login with email/password or Google OAuth.
+- Signed email verification before workspace tools are enabled.
 - Automatic linking of Google identities to existing accounts with the same email address.
-- Isolated workspaces, members, and email invitations.
+- Isolated workspaces, email invitations, and per-member campaign/metrics permissions.
 - Profile page with plan details, Premium expiration date, quota usage, account information, and password creation/change.
 - PT-BR and EN interfaces; the public language preference is stored in the browser, while the authenticated preference is also saved to the user profile.
 - Standard campaigns with multiple ads and a unique tracking pixel for each ad.
@@ -95,10 +96,36 @@ The [.env.example](.env.example) file documents every variable used by Docker Co
 - Application: `APP_KEY`, `APP_URL`, `FRONTEND_URL`, `SESSION_DOMAIN`.
 - MySQL: `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_ROOT_PASSWORD`.
 - Google OAuth: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
+- Transactional email: `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, and sender identity.
 - Mercado Pago: `MERCADO_PAGO_PUBLIC_KEY`, `MERCADO_PAGO_ACCESS_TOKEN`, `MERCADO_PAGO_WEBHOOK_SECRET`, prices, and notification URL.
 - Reverb: `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, host, port, and scheme.
 
 Never commit `.env`, access tokens, private keys, or MySQL volume data.
+
+## Transactional email and verification
+
+Tabor Ads uses Laravel Mail through SMTP for account verification and workspace invitations. The recommended provider is Resend, although any compatible SMTP service can be used.
+
+`APP_URL` must be the public HTTPS address of the application (for example, `https://tabor-ads.example.com`), because Laravel uses it to generate the signed email-verification links. `FRONTEND_URL` must point to the same public frontend origin.
+
+For Resend in production, verify the sending domain, create an API key, and configure:
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_SCHEME=null
+MAIL_HOST=smtp.resend.com
+MAIL_PORT=587
+MAIL_TIMEOUT=10
+MAIL_USERNAME=resend
+MAIL_PASSWORD=re_your_api_key
+MAIL_FROM_ADDRESS=notifications@your-domain.com
+MAIL_FROM_NAME="Tabor Ads"
+MAIL_LOGO_URL=https://your-domain.com/brand/tabor-ads-logo.svg
+```
+
+`MAIL_LOGO_URL` is optional, but it should use a publicly accessible HTTPS URL when emails are opened in Gmail, Outlook, or another remote client. This is especially useful during local development, since those clients cannot load an image from `127.0.0.1`.
+
+The sender address must belong to the domain verified with the email provider. New email/password accounts receive a signed verification link that expires after 60 minutes. Workspace invitation links expire after seven days and preserve the permissions selected by the workspace owner. Google accounts are considered verified by the identity provider.
 
 ## Google OAuth
 

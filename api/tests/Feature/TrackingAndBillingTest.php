@@ -106,16 +106,17 @@ class TrackingAndBillingTest extends TestCase
         $this->actingAs($user)->getJson('/api/billing/payments/790/status')->assertForbidden();
     }
 
-    public function test_workspace_members_can_authorize_the_private_billing_channel(): void
+    public function test_only_workspace_owner_can_authorize_the_private_billing_channel(): void
     {
         $workspace = Workspace::create(['name' => 'Acme', 'slug' => 'acme']);
+        $owner = User::factory()->create();
         $member = User::factory()->create();
-        $outsider = User::factory()->create();
+        $workspace->members()->attach($owner->id, ['role' => 'owner', 'joined_at' => now()]);
         $workspace->members()->attach($member->id, ['role' => 'member', 'joined_at' => now()]);
         $payload = ['socket_id' => '1234.5678', 'channel_name' => 'private-workspaces.'.$workspace->id.'.billing'];
 
-        $this->actingAs($member)->postJson('/broadcasting/auth', $payload)->assertOk();
-        $this->actingAs($outsider)->postJson('/broadcasting/auth', $payload)->assertForbidden();
+        $this->actingAs($owner)->postJson('/broadcasting/auth', $payload)->assertOk();
+        $this->actingAs($member)->postJson('/broadcasting/auth', $payload)->assertForbidden();
     }
 
     public function test_transparent_checkout_creates_a_payment_without_trusting_the_frontend_amount(): void

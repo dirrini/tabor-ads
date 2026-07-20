@@ -40,7 +40,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import BrandLogo from '../components/BrandLogo.vue'
 import LocaleSwitcher from '../components/LocaleSwitcher.vue'
-import { API_URL } from '../lib/api'
+import { API_URL, api } from '../lib/api'
 import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 
@@ -50,7 +50,11 @@ const auth = useAuthStore()
 const toast = useToastStore()
 const { t, locale } = useI18n()
 const registering = computed(() => route.path === '/register')
-const googleUrl = computed(() => `${API_URL}/api/auth/google/redirect?locale=${encodeURIComponent(locale.value)}`)
+const googleUrl = computed(() => {
+  const params = new URLSearchParams({ locale: locale.value })
+  if (route.query.invite) params.set('invite', route.query.invite)
+  return `${API_URL}/api/auth/google/redirect?${params}`
+})
 const form = reactive({
   name: '',
   workspace_name: '',
@@ -66,9 +70,12 @@ async function submit() {
   try {
     const payload = { ...form, ...(registering.value ? { locale: locale.value } : {}) }
     if (registering.value) await auth.register(payload)
-    else await auth.login(payload)
+    else {
+      await auth.login(payload)
+      if (route.query.invite) await api(`/api/workspace/invitations/${route.query.invite}/accept`, { method: 'POST' })
+    }
     toast.success(t(registering.value ? 'auth.registerSuccess' : 'auth.loginSuccess'))
-    await router.push(route.query.redirect || '/app/dashboard')
+    await router.push(auth.verified ? (route.query.redirect || '/app/dashboard') : '/verify-email')
   } catch (exception) {
     toast.error(exception.message)
   } finally {

@@ -11,8 +11,8 @@
     <div v-if="loading" class="panel profile-loading">{{ t('common.loading') }}</div>
 
     <template v-else-if="profile.user">
-      <section class="profile-plan-grid">
-        <article class="profile-plan-card" :class="{ premium: profile.workspace.plan === 'premium' }">
+      <section class="profile-plan-grid" :class="{ 'member-profile-grid': !profile.workspace.permissions.owner }">
+        <article v-if="profile.workspace.permissions.owner" class="profile-plan-card" :class="{ premium: profile.workspace.plan === 'premium' }">
           <div>
             <span class="plan-badge">{{ t('profile.currentPlan') }}</span>
             <h2>{{ planName }}</h2>
@@ -40,12 +40,14 @@
             <div><dt>{{ t('profile.identifier') }}</dt><dd>{{ profile.workspace.slug }}</dd></div>
             <div><dt>{{ t('profile.createdAt') }}</dt><dd>{{ formatDate(profile.workspace.created_at) }}</dd></div>
             <div><dt>{{ t('profile.memberSince') }}</dt><dd>{{ formatDate(profile.workspace.joined_at) }}</dd></div>
-            <div><dt>{{ t('profile.realtime') }}</dt><dd>{{ t(profile.workspace.limits.realtime ? 'common.enabled' : 'common.disabled') }}</dd></div>
+            <div v-if="profile.workspace.permissions.owner"><dt>{{ t('profile.realtime') }}</dt><dd>{{ t(profile.workspace.limits.realtime ? 'common.enabled' : 'common.disabled') }}</dd></div>
+            <div v-else><dt>{{ t('profile.createCampaigns') }}</dt><dd>{{ t(profile.workspace.permissions.can_create_campaigns ? 'common.enabled' : 'common.disabled') }}</dd></div>
+            <div v-if="!profile.workspace.permissions.owner"><dt>{{ t('profile.viewMetrics') }}</dt><dd>{{ t(profile.workspace.permissions.can_view_metrics ? 'common.enabled' : 'common.disabled') }}</dd></div>
           </dl>
         </article>
       </section>
 
-      <section class="profile-usage-grid">
+      <section v-if="profile.workspace.permissions.owner" class="profile-usage-grid">
         <article><small>{{ t('profile.campaignUsage') }}</small><strong>{{ profile.workspace.usage.campaigns }} / {{ profile.workspace.limits.campaigns }}</strong><span>{{ t('profile.standardCampaigns') }}</span></article>
         <article><small>{{ t('profile.adsLimit') }}</small><strong>{{ profile.workspace.limits.ads_per_campaign }}</strong><span>{{ t('profile.perCampaign') }}</span></article>
         <article><small>{{ t('profile.memberUsage') }}</small><strong>{{ profile.workspace.usage.members }} / {{ profile.workspace.limits.members }}</strong><span>{{ t('profile.workspaceSeats') }}</span></article>

@@ -4,7 +4,14 @@ import { setAppLocale } from '../i18n'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({ user: null, workspace: null, loaded: false, lastBillingUpdate: null }),
-  getters: { authenticated: (state) => Boolean(state.user), premium: (state) => state.workspace?.plan === 'premium' },
+  getters: {
+    authenticated: (state) => Boolean(state.user),
+    verified: (state) => Boolean(state.user?.email_verified),
+    premium: (state) => state.workspace?.plan === 'premium',
+    owner: (state) => Boolean(state.workspace?.permissions?.owner),
+    canCreateCampaigns: (state) => Boolean(state.workspace?.permissions?.can_create_campaigns),
+    canViewMetrics: (state) => Boolean(state.workspace?.permissions?.can_view_metrics),
+  },
   actions: {
     async load() {
       if (this.loaded) return

@@ -7,7 +7,7 @@
         <p>{{ t('dashboard.subtitle') }}</p>
       </div>
       <div class="head-actions">
-        <span :class="['status-pill', data.realtime ? 'live' : 'static']">
+        <span v-if="data.metrics_allowed" :class="['status-pill', data.realtime ? 'live' : 'static']">
           {{ t(data.realtime ? 'dashboard.realtime' : 'dashboard.snapshot') }}
         </span>
         <button class="btn btn-ghost" :disabled="loading" @click="load">
@@ -16,6 +16,19 @@
       </div>
     </header>
 
+    <section v-if="!data.metrics_allowed" class="restricted-dashboard">
+      <div class="panel restricted-dashboard-copy">
+        <span class="overline">{{ t('dashboard.workspaceOverview') }}</span>
+        <h2>{{ t('dashboard.restrictedTitle') }}</h2>
+        <p>{{ t('dashboard.restrictedText') }}</p>
+      </div>
+      <div class="metric-grid restricted-metrics">
+        <article><small>{{ t('dashboard.active') }}</small><strong>{{ number(data.summary.active_campaigns) }}</strong><span>{{ t('dashboard.activeCampaignSummary') }}</span></article>
+        <article><small>{{ t('dashboard.adsTotal') }}</small><strong>{{ number(data.summary.ads) }}</strong><span>{{ t('dashboard.adsSummary') }}</span></article>
+      </div>
+    </section>
+
+    <template v-else>
     <section class="panel analytics-filters">
       <div class="filter-toolbar">
         <div>
@@ -185,6 +198,7 @@
         <span>{{ t('dashboard.createSimulationFirst') }}</span>
       </div>
     </section>
+    </template>
   </div>
 </template>
 
@@ -224,6 +238,8 @@ const simulationSecondsRemaining = ref(180)
 const startingSimulation = ref(false)
 const simulationTickRunning = ref(false)
 const data = reactive({
+  metrics_allowed: auth.canViewMetrics,
+  summary: { active_campaigns: 0, ads: 0 },
   campaigns: [],
   browsers: [],
   timeline: [],
@@ -341,7 +357,7 @@ function resetFilters() {
 }
 
 function setupRealtime() {
-  if (echo) return
+  if (echo || !data.metrics_allowed) return
   const realtimeCampaigns = data.filters.campaigns.filter((campaign) => data.realtime || campaign.kind === 'simulation')
   if (!realtimeCampaigns.length) return
 
