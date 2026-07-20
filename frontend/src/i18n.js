@@ -306,6 +306,154 @@ en.invitation = {
   invalidText: 'This invitation does not exist, has expired, or has already been used.',
 }
 
+pt.legal = {
+  footerNavigation: 'Links legais',
+  back: 'Voltar para o início',
+  updatedAt: 'Última atualização: 20 de julho de 2026',
+  contactTitle: 'Contato',
+  contactText: 'Para dúvidas, solicitações sobre dados pessoais ou assuntos relacionados a estes documentos, entre em contato:',
+  privacy: {
+    link: 'Política de Privacidade',
+    eyebrow: 'PRIVACIDADE E PROTEÇÃO DE DADOS',
+    title: 'Política de Privacidade',
+    intro: 'Esta política explica como o Tabor Ads coleta, utiliza, compartilha e protege dados pessoais durante o uso do site, da plataforma de analytics e das integrações de autenticação e pagamento.',
+    sections: {
+      controller: {
+        title: '1. Controlador e abrangência',
+        text: 'O Tabor Ads é responsável pelo tratamento dos dados pessoais descritos nesta política. Ela se aplica ao site tabor-ads.dirrini.tech, às contas de usuário, aos workspaces e aos recursos de tracking, analytics, equipes e cobrança oferecidos pela plataforma.',
+      },
+      data: {
+        title: '2. Dados que tratamos',
+        text: 'Podemos tratar nome, e-mail, senha protegida por hash, idioma, situação da verificação de e-mail e vínculo com workspaces; informações de campanhas, anúncios e permissões da equipe; identificadores de sessão, endereço IP e user-agent; e dados técnicos de impressões, como horário, navegador e plataforma.\n\nPara cobrança, armazenamos identificadores, situação e histórico da transação fornecidos pelo Mercado Pago. Os dados completos do cartão são tokenizados pelo Mercado Pago e não são armazenados nos servidores do Tabor Ads.',
+      },
+      google: {
+        title: '3. Login com Google',
+        text: 'Ao escolher “Continuar com Google”, recebemos somente as informações básicas autorizadas para autenticação, como identificador da conta Google, nome, endereço de e-mail e, quando disponível, foto do perfil. Usamos esses dados exclusivamente para criar ou associar sua conta, confirmar sua identidade e permitir o acesso ao Tabor Ads.\n\nNão acessamos sua senha do Google, contatos, arquivos do Google Drive ou conteúdo de outros produtos Google. Não vendemos os dados recebidos do Google nem os utilizamos para publicidade. Você pode remover o acesso nas configurações de segurança da sua Conta Google.',
+      },
+      purposes: {
+        title: '4. Finalidades e bases legais',
+        text: 'Usamos os dados para criar e proteger contas; autenticar usuários; verificar e-mails; administrar workspaces e permissões; processar convites; registrar e apresentar métricas; detectar abuso e falhas; prestar suporte; processar pagamentos; cumprir obrigações legais; e melhorar a segurança e o funcionamento da plataforma. O tratamento se fundamenta, conforme o caso, na execução do contrato, em procedimentos preliminares, no legítimo interesse, no cumprimento de obrigação legal e no consentimento.',
+      },
+      sharing: {
+        title: '5. Compartilhamento e operadores',
+        text: 'Compartilhamos apenas o necessário com fornecedores que viabilizam o serviço, como infraestrutura de hospedagem, envio de e-mails, Google para autenticação e Mercado Pago para pagamentos. Esses fornecedores tratam dados conforme seus próprios termos e políticas. Também poderemos compartilhar informações quando exigido por lei, ordem judicial ou para proteger direitos e a segurança da plataforma e de seus usuários.',
+      },
+      retention: {
+        title: '6. Retenção e exclusão',
+        text: 'Mantemos os dados enquanto a conta ou o workspace estiver ativo e pelo período necessário para cumprir as finalidades informadas, resolver disputas, prevenir fraudes e atender obrigações legais. Após o término do tratamento, os dados poderão ser eliminados ou anonimizados, salvo quando sua conservação for permitida ou exigida por lei.',
+      },
+      security: {
+        title: '7. Segurança',
+        text: 'Adotamos controles técnicos e organizacionais para reduzir riscos de acesso não autorizado, perda, alteração ou divulgação, incluindo conexões HTTPS, isolamento por workspace, controle de permissões e proteção de credenciais. Nenhum sistema é totalmente imune a incidentes; caso ocorra um evento relevante, adotaremos as providências aplicáveis.',
+      },
+      rights: {
+        title: '8. Seus direitos pela LGPD',
+        text: 'Nos termos da Lei nº 13.709/2018, você pode solicitar confirmação e acesso aos dados, correção, anonimização, bloqueio ou eliminação de dados desnecessários, portabilidade quando aplicável, informações sobre compartilhamento, revogação do consentimento e revisão de decisões automatizadas. Para exercer seus direitos, use o contato ao final desta página. Poderemos solicitar informações para confirmar sua identidade.',
+      },
+      changes: {
+        title: '9. Alterações desta política',
+        text: 'Esta política poderá ser atualizada para refletir mudanças legais, técnicas ou nos recursos do Tabor Ads. A data da versão vigente será indicada no início da página e, quando a alteração for relevante, poderemos comunicar os usuários pelos canais disponíveis.',
+      },
+    },
+  },
+  terms: {
+    link: 'Termos de Uso',
+    eyebrow: 'REGRAS DE UTILIZAÇÃO',
+    title: 'Termos de Uso',
+    intro: 'Estes termos regulam o acesso e o uso do Tabor Ads. Ao criar uma conta ou utilizar a plataforma, você declara que leu e concordou com estas condições e com a Política de Privacidade.',
+    sections: {
+      acceptance: {
+        title: '1. Aceitação e elegibilidade',
+        text: 'Você deve possuir capacidade legal para contratar e fornecer informações verdadeiras e atualizadas. Se usar o Tabor Ads em nome de uma empresa ou organização, declara possuir autorização para vinculá-la a estes termos.',
+      },
+      service: {
+        title: '2. O serviço',
+        text: 'O Tabor Ads oferece criação de workspaces, campanhas e anúncios, geração de pixels de tracking, dashboards de analytics, simulação de tráfego, colaboração em equipe e recursos premium. As funcionalidades e limites disponíveis dependem do plano contratado e podem evoluir ao longo do tempo.',
+      },
+      account: {
+        title: '3. Conta e segurança',
+        text: 'Você é responsável por manter suas credenciais seguras, pelas atividades realizadas em sua conta e pelas permissões concedidas aos membros do workspace. Informe-nos sobre qualquer uso não autorizado. Contas criadas por e-mail precisam ser verificadas para liberar as funcionalidades protegidas. O login com Google está sujeito também aos termos da Conta Google.',
+      },
+      tracking: {
+        title: '4. Pixels, campanhas e responsabilidade sobre dados',
+        text: 'Você deve instalar e utilizar os pixels somente em propriedades e campanhas para as quais possua autorização. É sua responsabilidade fornecer avisos de privacidade, obter consentimentos quando necessários e cumprir a legislação aplicável ao coletar dados de visitantes. É proibido usar o serviço para vigilância ilícita, coleta de dados sensíveis sem base legal ou identificação indevida de pessoas.',
+      },
+      plans: {
+        title: '5. Planos e pagamentos',
+        text: 'O plano gratuito e os planos Premium possuem os limites e preços exibidos na plataforma. Pagamentos são processados pelo Mercado Pago. A ativação do Premium depende da aprovação do pagamento, e sua vigência segue o ciclo escolhido. Preços ou condições futuras poderão mudar mediante informação prévia, sem reduzir o período já pago.',
+      },
+      acceptableUse: {
+        title: '6. Uso aceitável',
+        text: 'Você não pode violar leis ou direitos de terceiros; tentar acessar contas ou dados sem autorização; contornar limites do plano; interferir na disponibilidade ou segurança do serviço; enviar código malicioso; gerar tráfego abusivo fora das ferramentas permitidas; revender o serviço sem autorização; ou utilizá-lo para fraude, spam ou atividades enganosas.',
+      },
+      intellectualProperty: {
+        title: '7. Propriedade intelectual',
+        text: 'O Tabor Ads e seus componentes, marca, interface e software são protegidos pela legislação aplicável. Estes termos concedem somente uma licença limitada, revogável e não exclusiva para uso da plataforma. Você mantém os direitos sobre os dados e conteúdos inseridos e nos concede a autorização necessária para processá-los e prestar o serviço.',
+      },
+      availability: {
+        title: '8. Disponibilidade e limitações',
+        text: 'Buscamos manter a plataforma segura e disponível, mas não garantimos operação ininterrupta ou ausência total de erros. Poderão ocorrer manutenções, indisponibilidades de fornecedores e eventos fora do nosso controle. Métricas de tracking podem sofrer variações por bloqueadores, navegadores, redes e configurações externas e não constituem garantia de desempenho publicitário.',
+      },
+      termination: {
+        title: '9. Suspensão e encerramento',
+        text: 'Você pode deixar de usar o serviço a qualquer momento. Poderemos suspender ou encerrar acessos em caso de violação destes termos, risco de segurança, fraude, inadimplência ou obrigação legal, observando a legislação aplicável. Solicitações relacionadas à exclusão de dados podem ser feitas pelo contato indicado abaixo.',
+      },
+      law: {
+        title: '10. Legislação aplicável',
+        text: 'Estes termos são regidos pelas leis da República Federativa do Brasil, inclusive pelo Marco Civil da Internet, pelo Código de Defesa do Consumidor quando aplicável e pela Lei Geral de Proteção de Dados. Eventuais conflitos serão tratados no foro competente definido pela legislação brasileira.',
+      },
+      changes: {
+        title: '11. Alterações dos termos',
+        text: 'Podemos atualizar estes termos para acompanhar mudanças no serviço ou na legislação. Alterações relevantes serão comunicadas pelos meios disponíveis e passarão a valer na data informada. A continuidade do uso após a vigência representa aceitação da nova versão.',
+      },
+    },
+  },
+}
+
+en.legal = {
+  footerNavigation: 'Legal links',
+  back: 'Back to home',
+  updatedAt: 'Last updated: July 20, 2026',
+  contactTitle: 'Contact',
+  contactText: 'For questions, personal data requests, or matters related to these documents, contact us at:',
+  privacy: {
+    link: 'Privacy Policy',
+    eyebrow: 'PRIVACY AND DATA PROTECTION',
+    title: 'Privacy Policy',
+    intro: 'This policy explains how Tabor Ads collects, uses, shares, and protects personal data when you use our website, analytics platform, authentication integrations, and payment features.',
+    sections: {
+      controller: { title: '1. Controller and scope', text: 'Tabor Ads is responsible for the processing described in this policy. It applies to tabor-ads.dirrini.tech, user accounts, workspaces, and the tracking, analytics, team, and billing features offered by the platform.' },
+      data: { title: '2. Data we process', text: 'We may process your name, email address, hashed password, language, email verification status, and workspace membership; campaign, ad, and team permission information; session identifiers, IP address, and user agent; and technical impression data such as time, browser, and platform.\n\nFor billing, we store transaction identifiers, status, and history provided by Mercado Pago. Full card details are tokenized by Mercado Pago and are not stored on Tabor Ads servers.' },
+      google: { title: '3. Sign in with Google', text: 'When you choose “Continue with Google,” we receive only the basic information authorized for authentication, such as your Google account identifier, name, email address, and profile picture when available. We use it solely to create or link your account, confirm your identity, and provide access to Tabor Ads.\n\nWe do not access your Google password, contacts, Google Drive files, or content from other Google products. We do not sell data received from Google or use it for advertising. You may remove access through your Google Account security settings.' },
+      purposes: { title: '4. Purposes and legal bases', text: 'We use data to create and protect accounts; authenticate users; verify email addresses; manage workspaces and permissions; process invitations; record and display metrics; detect abuse and failures; provide support; process payments; meet legal obligations; and improve platform security and operation. Depending on the context, processing relies on contract performance, pre-contractual steps, legitimate interests, legal obligations, or consent.' },
+      sharing: { title: '5. Sharing and service providers', text: 'We share only what is necessary with providers that enable the service, including hosting infrastructure, email delivery, Google for authentication, and Mercado Pago for payments. These providers process data under their own terms and policies. We may also disclose information when required by law or court order, or to protect the rights and safety of the platform and its users.' },
+      retention: { title: '6. Retention and deletion', text: 'We retain data while an account or workspace remains active and for as long as needed to fulfill the purposes described, resolve disputes, prevent fraud, and comply with legal obligations. Once processing ends, data may be deleted or anonymized unless retention is permitted or required by law.' },
+      security: { title: '7. Security', text: 'We use technical and organizational controls intended to reduce the risk of unauthorized access, loss, alteration, or disclosure, including HTTPS connections, workspace isolation, permission controls, and credential protection. No system is completely immune to incidents; if a relevant event occurs, we will take the measures required under applicable law.' },
+      rights: { title: '8. Your data protection rights', text: 'Subject to applicable law, including Brazil’s LGPD, you may request confirmation and access, correction, anonymization, restriction or deletion of unnecessary data, portability where applicable, information about sharing, withdrawal of consent, and review of automated decisions. Use the contact below to exercise these rights. We may request information to verify your identity.' },
+      changes: { title: '9. Changes to this policy', text: 'We may update this policy to reflect legal, technical, or product changes. The current version date will appear at the top of this page and, when a change is material, we may notify users through available channels.' },
+    },
+  },
+  terms: {
+    link: 'Terms of Use',
+    eyebrow: 'RULES OF USE',
+    title: 'Terms of Use',
+    intro: 'These terms govern access to and use of Tabor Ads. By creating an account or using the platform, you acknowledge that you have read and agreed to these terms and the Privacy Policy.',
+    sections: {
+      acceptance: { title: '1. Acceptance and eligibility', text: 'You must have legal capacity to enter into an agreement and must provide accurate, current information. If you use Tabor Ads for a company or organization, you represent that you are authorized to bind it to these terms.' },
+      service: { title: '2. The service', text: 'Tabor Ads provides workspaces, campaigns and ads, tracking pixels, analytics dashboards, traffic simulation, team collaboration, and Premium features. Available functionality and limits depend on the selected plan and may evolve over time.' },
+      account: { title: '3. Account and security', text: 'You are responsible for keeping credentials secure, for activity under your account, and for permissions granted to workspace members. Notify us of unauthorized use. Email accounts must be verified before protected features become available. Google sign-in is also subject to the terms governing your Google Account.' },
+      tracking: { title: '4. Pixels, campaigns, and data responsibility', text: 'You must install and use pixels only on properties and campaigns you are authorized to manage. You are responsible for providing privacy notices, obtaining consent where required, and complying with applicable law when collecting visitor data. The service may not be used for unlawful surveillance, collection of sensitive data without a legal basis, or improper identification of individuals.' },
+      plans: { title: '5. Plans and payments', text: 'The Free and Premium plans have the limits and prices displayed in the platform. Payments are processed by Mercado Pago. Premium activation depends on payment approval and lasts for the selected cycle. Future prices or conditions may change with prior notice without reducing any already-paid period.' },
+      acceptableUse: { title: '6. Acceptable use', text: 'You may not violate laws or third-party rights; access accounts or data without permission; circumvent plan limits; disrupt service availability or security; distribute malicious code; generate abusive traffic outside permitted tools; resell the service without authorization; or use it for fraud, spam, or deceptive activity.' },
+      intellectualProperty: { title: '7. Intellectual property', text: 'Tabor Ads and its software, interface, components, and brand are protected by applicable law. These terms grant only a limited, revocable, non-exclusive license to use the platform. You retain rights to data and content you submit and authorize us to process them as necessary to provide the service.' },
+      availability: { title: '8. Availability and limitations', text: 'We work to keep the platform secure and available but do not guarantee uninterrupted or error-free operation. Maintenance, provider outages, and events outside our control may occur. Tracking metrics may vary due to blockers, browsers, networks, and external settings and are not a guarantee of advertising performance.' },
+      termination: { title: '9. Suspension and termination', text: 'You may stop using the service at any time. We may suspend or terminate access for a violation of these terms, security risk, fraud, non-payment, or legal requirement, subject to applicable law. Data deletion requests may be submitted using the contact below.' },
+      law: { title: '10. Governing law', text: 'These terms are governed by the laws of the Federative Republic of Brazil, including the Brazilian Internet Act, consumer law where applicable, and the General Data Protection Law. Disputes will be handled by the competent venue determined under Brazilian law.' },
+      changes: { title: '11. Changes to these terms', text: 'We may update these terms to reflect service or legal changes. Material changes will be communicated through available channels and will take effect on the stated date. Continued use after that date constitutes acceptance of the updated version.' },
+    },
+  },
+}
+
 const normalize = (locale) => SUPPORTED_LOCALES.includes(locale) ? locale : 'pt-BR'
 const initialLocale = normalize(localStorage.getItem(LOCALE_STORAGE_KEY))
 export const i18n = createI18n({ legacy: false, locale: initialLocale, fallbackLocale: 'pt-BR', messages: { 'pt-BR': pt, en } })
