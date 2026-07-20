@@ -15,6 +15,7 @@ abstract class TestCase extends BaseTestCase
             'DB_CONNECTION' => 'sqlite',
             'DB_DATABASE' => ':memory:',
             'DB_URL' => '',
+            'MAIL_MAILER' => 'array',
             'REVERB_APP_ID' => 'testing-app',
             'REVERB_APP_KEY' => 'testing-key',
             'REVERB_APP_SECRET' => 'testing-secret',

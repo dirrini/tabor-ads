@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesWorkspace;
 use App\Services\PlanService;
+use App\Services\WorkspaceAccessService;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ class AnalyticsController extends Controller
 {
     use ResolvesWorkspace;
 
-    public function __invoke(Request $request, PlanService $plans): JsonResponse
+    public function __invoke(Request $request, PlanService $plans, WorkspaceAccessService $access): JsonResponse
     {
         $validated = $request->validate([
             'campaign_ids' => ['sometimes', 'array'],
@@ -25,6 +26,23 @@ class AnalyticsController extends Controller
         ]);
 
         $workspace = $this->workspace($request);
+        $permissions = $access->permissions($request->user(), $workspace);
+        $summary = [
+            'active_campaigns' => $workspace->campaigns()->where('status', 'active')->whereNull('archived_at')->count(),
+            'ads' => DB::table('ads')
+                ->join('campaigns', 'campaigns.id', '=', 'ads.campaign_id')
+                ->where('campaigns.workspace_id', $workspace->id)
+                ->whereNull('campaigns.archived_at')
+                ->whereNull('ads.archived_at')
+                ->count(),
+        ];
+        if (! $permissions['can_view_metrics']) {
+            return response()->json(['data' => [
+                'metrics_allowed' => false,
+                'summary' => $summary,
+                'refreshed_at' => now()->toIso8601String(),
+            ]]);
+        }
         $days = (int) ($validated['days'] ?? 30);
 
         $campaignCatalog = DB::table('campaigns')
@@ -114,6 +132,8 @@ class AnalyticsController extends Controller
             : round((($currentTotal - $previousTotal) / $previousTotal) * 100, 1);
 
         return response()->json(['data' => [
+            'metrics_allowed' => true,
+            'summary' => $summary,
             'campaigns' => $campaigns,
             'browsers' => $browsers,
             'timeline' => $timeline,

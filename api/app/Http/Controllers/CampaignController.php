@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ResolvesWorkspace;
 use App\Models\Campaign;
 use App\Services\PlanService;
+use App\Services\WorkspaceAccessService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +16,10 @@ class CampaignController extends Controller
 {
     use ResolvesWorkspace;
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, WorkspaceAccessService $access): JsonResponse
     {
         $workspace = $this->workspace($request);
+        $access->assertCanCreateCampaigns($request->user(), $workspace);
         $campaigns = $workspace->campaigns()->withCount('ads')->with(['ads' => fn ($q) => $q->whereNull('archived_at')])->latest()->get();
 
         return response()->json([
@@ -28,7 +30,7 @@ class CampaignController extends Controller
         ]);
     }
 
-    public function store(Request $request, PlanService $plans): JsonResponse
+    public function store(Request $request, PlanService $plans, WorkspaceAccessService $access): JsonResponse
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
@@ -36,6 +38,7 @@ class CampaignController extends Controller
             'simulation' => ['sometimes', 'boolean'],
         ]);
         $workspace = $this->workspace($request);
+        $access->assertCanCreateCampaigns($request->user(), $workspace);
 
         $campaign = DB::transaction(function () use ($workspace, $request, $data, $plans) {
             $workspace = $workspace->newQuery()->lockForUpdate()->findOrFail($workspace->id);
@@ -54,26 +57,28 @@ class CampaignController extends Controller
         return response()->json(['data' => $campaign], 201);
     }
 
-    public function update(Request $request, Campaign $campaign): JsonResponse
+    public function update(Request $request, Campaign $campaign, WorkspaceAccessService $access): JsonResponse
     {
-        $this->assertCampaign($request, $campaign);
+        $this->assertCampaign($request, $campaign, $access);
         $data = $request->validate(['name' => ['sometimes', 'string', 'max:120'], 'status' => ['sometimes', Rule::in(['draft', 'active', 'paused'])]]);
         $campaign->update($data);
 
         return response()->json(['data' => $campaign->fresh('ads')]);
     }
 
-    public function archive(Request $request, Campaign $campaign): JsonResponse
+    public function archive(Request $request, Campaign $campaign, WorkspaceAccessService $access): JsonResponse
     {
-        $this->assertCampaign($request, $campaign);
+        $this->assertCampaign($request, $campaign, $access);
         abort_if($campaign->kind === 'simulation', 422, __('api.simulation_cannot_archive'));
         $campaign->update(['status' => 'archived', 'archived_at' => now()]);
 
         return response()->json(['message' => __('api.campaign_archived')]);
     }
 
-    private function assertCampaign(Request $request, Campaign $campaign): void
+    private function assertCampaign(Request $request, Campaign $campaign, WorkspaceAccessService $access): void
     {
-        abort_unless($campaign->workspace_id === $this->workspace($request)->id, 404);
+        $workspace = $this->workspace($request);
+        abort_unless($campaign->workspace_id === $workspace->id, 404);
+        $access->assertCanCreateCampaigns($request->user(), $workspace);
     }
 }

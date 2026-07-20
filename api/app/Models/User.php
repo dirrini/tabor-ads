@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\VerifyEmailNotification;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Illuminate\Notifications\Notifiable;
 
 #[Fillable(['name', 'email', 'email_verified_at', 'password', 'status', 'locale', 'current_workspace_id'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -35,7 +36,7 @@ class User extends Authenticatable
     public function workspaces(): BelongsToMany
     {
         return $this->belongsToMany(Workspace::class, 'workspace_members')
-            ->withPivot(['role', 'joined_at']);
+            ->withPivot(['role', 'can_create_campaigns', 'can_view_metrics', 'joined_at']);
     }
 
     public function oauthIdentities(): HasMany
@@ -53,5 +54,11 @@ class User extends Authenticatable
         }
 
         return $this->workspaces()->orderBy('workspace_members.id')->first();
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $locale = $this->locale === 'en' ? 'en' : 'pt_BR';
+        $this->notify((new VerifyEmailNotification)->locale($locale));
     }
 }

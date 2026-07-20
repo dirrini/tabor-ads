@@ -6,6 +6,7 @@ use App\Events\ImpressionRecorded;
 use App\Http\Controllers\Concerns\ResolvesWorkspace;
 use App\Models\AdImpression;
 use App\Models\Campaign;
+use App\Services\WorkspaceAccessService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -19,9 +20,10 @@ class SimulationController extends Controller
 
     private const MAX_SECONDS = 180;
 
-    public function start(Request $request): JsonResponse
+    public function start(Request $request, WorkspaceAccessService $access): JsonResponse
     {
         $workspace = $this->workspace($request);
+        $access->assertCanCreateCampaigns($request->user(), $workspace);
         $campaignIds = Campaign::query()
             ->where('workspace_id', $workspace->id)
             ->where('kind', 'simulation')
@@ -48,10 +50,11 @@ class SimulationController extends Controller
         ]);
     }
 
-    public function tick(Request $request): JsonResponse
+    public function tick(Request $request, WorkspaceAccessService $access): JsonResponse
     {
         $data = $request->validate(['token' => ['required', 'string', 'size:48']]);
         $workspace = $this->workspace($request);
+        $access->assertCanCreateCampaigns($request->user(), $workspace);
         $session = $this->activeSession($workspace->id, $request->user()->id, $data['token']);
 
         $campaigns = Campaign::query()
@@ -126,10 +129,11 @@ class SimulationController extends Controller
         ]);
     }
 
-    public function stop(Request $request): JsonResponse
+    public function stop(Request $request, WorkspaceAccessService $access): JsonResponse
     {
         $data = $request->validate(['token' => ['nullable', 'string', 'size:48']]);
         $workspace = $this->workspace($request);
+        $access->assertCanCreateCampaigns($request->user(), $workspace);
         $key = $this->cacheKey($workspace->id, $request->user()->id);
         $session = Cache::get($key);
 

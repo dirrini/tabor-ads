@@ -6,6 +6,7 @@ use App\Models\PaymentWebhookEvent;
 use App\Services\MercadoPagoClient;
 use App\Services\MercadoPagoWebhookSignature;
 use App\Services\PremiumEntitlementService;
+use App\Services\WorkspacePlanNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -13,8 +14,13 @@ use Throwable;
 
 class MercadoPagoWebhookController extends Controller
 {
-    public function __invoke(Request $request, MercadoPagoClient $client, MercadoPagoWebhookSignature $signature, PremiumEntitlementService $entitlements): JsonResponse
-    {
+    public function __invoke(
+        Request $request,
+        MercadoPagoClient $client,
+        MercadoPagoWebhookSignature $signature,
+        PremiumEntitlementService $entitlements,
+        WorkspacePlanNotifier $notifier,
+    ): JsonResponse {
         abort_unless($signature->isValid($request), 401);
         $payload = $request->all();
         $resourceId = (string) ($request->query('data.id') ?: $request->query('data_id') ?: Arr::get($payload, 'data.id'));
@@ -32,7 +38,10 @@ class MercadoPagoWebhookController extends Controller
 
         try {
             if ($type === 'payment') {
-                $entitlements->syncPayment($client->getPayment($resourceId));
+                $subscription = $entitlements->syncPayment($client->getPayment($resourceId));
+                if ($subscription) {
+                    $notifier->notify($subscription);
+                }
             }
             $event->update(['status' => 'processed', 'processed_at' => now()]);
         } catch (Throwable $error) {
