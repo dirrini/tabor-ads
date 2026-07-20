@@ -54,6 +54,51 @@
         <article><small>{{ t('profile.simulations') }}</small><strong>{{ profile.workspace.usage.simulation_campaigns }}</strong><span>{{ t('profile.outsideLimit') }}</span></article>
       </section>
 
+      <section class="panel profile-workspaces">
+        <div class="panel-head">
+          <div>
+            <small>{{ t('profile.workspaces') }}</small>
+            <h2>{{ t('profile.manageWorkspaces') }}</h2>
+            <p>{{ t('profile.workspacesText') }}</p>
+          </div>
+          <button class="btn btn-ghost" type="button" @click="showWorkspaceForm = !showWorkspaceForm">
+            {{ t('profile.newWorkspace') }}
+          </button>
+        </div>
+
+        <form v-if="showWorkspaceForm" class="new-workspace-form" @submit.prevent="createWorkspace">
+          <label>
+            {{ t('profile.workspaceName') }}
+            <input v-model="workspaceName" maxlength="120" :placeholder="t('profile.workspaceNamePlaceholder')" required>
+          </label>
+          <button class="btn btn-primary" :disabled="creatingWorkspace">
+            <span v-if="creatingWorkspace" class="button-spinner"></span>
+            {{ t(creatingWorkspace ? 'profile.creatingWorkspace' : 'profile.createWorkspace') }}
+          </button>
+          <button class="btn workspace-form-cancel" type="button" :disabled="creatingWorkspace" @click="cancelWorkspaceCreation">
+            {{ t('common.cancel') }}
+          </button>
+        </form>
+
+        <div class="profile-workspace-list">
+          <button
+            v-for="workspace in auth.workspaces"
+            :key="workspace.id"
+            type="button"
+            :class="{ active: workspace.id === auth.workspace?.id, premium: workspace.permissions.owner && workspace.plan === 'premium' }"
+            :disabled="switchingWorkspace || workspace.id === auth.workspace?.id"
+            @click="switchWorkspace(workspace.id)"
+          >
+            <span>{{ workspaceInitials(workspace.name) }}</span>
+            <div>
+              <b>{{ workspace.name }}</b>
+              <small>{{ workspace.permissions.owner ? t(`profile.${workspace.plan}`) : t(`profile.roles.${workspace.role}`) }}</small>
+            </div>
+            <i>{{ workspace.id === auth.workspace?.id ? t('profile.currentWorkspace') : t('profile.switchWorkspace') }}</i>
+          </button>
+        </div>
+      </section>
+
       <section class="profile-account-grid">
         <article class="panel account-card">
           <div class="panel-head">
@@ -100,15 +145,23 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { api } from '../lib/api'
+import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 
 const { t, locale } = useI18n()
+const auth = useAuthStore()
 const toast = useToastStore()
+const route = useRoute()
+const router = useRouter()
 const loading = ref(true)
 const submitting = ref(false)
+const creatingWorkspace = ref(false)
+const switchingWorkspace = ref(false)
+const showWorkspaceForm = ref(route.query.newWorkspace === '1')
+const workspaceName = ref('')
 const profile = reactive({ user: null, workspace: null, subscription: null })
 const password = reactive({ current_password: '', password: '', password_confirmation: '' })
 
@@ -128,6 +181,7 @@ const loginMethods = computed(() => {
   if (profile.user?.providers?.includes('google')) methods.push('Google')
   return methods.join(' · ') || t('profile.noLoginMethod')
 })
+const workspaceInitials = (name) => name?.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase()
 
 function formatDate(value) {
   if (!value) return '—'
@@ -156,6 +210,38 @@ async function changePassword() {
     toast.error(error.message)
   } finally {
     submitting.value = false
+  }
+}
+
+function cancelWorkspaceCreation() {
+  showWorkspaceForm.value = false
+  workspaceName.value = ''
+  if (route.query.newWorkspace) router.replace('/app/profile')
+}
+
+async function createWorkspace() {
+  if (creatingWorkspace.value) return
+  creatingWorkspace.value = true
+  try {
+    const result = await auth.createWorkspace(workspaceName.value.trim())
+    toast.success(result.message)
+    await router.replace('/app/profile')
+  } catch (error) {
+    toast.error(error.message)
+  } finally {
+    creatingWorkspace.value = false
+  }
+}
+
+async function switchWorkspace(workspaceId) {
+  switchingWorkspace.value = true
+  try {
+    const result = await auth.switchWorkspace(workspaceId)
+    toast.success(result.message)
+  } catch (error) {
+    toast.error(error.message)
+  } finally {
+    switchingWorkspace.value = false
   }
 }
 

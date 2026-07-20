@@ -306,6 +306,37 @@ en.invitation = {
   invalidText: 'This invitation does not exist, has expired, or has already been used.',
 }
 
+pt.workspaceSwitcher = {
+  title: 'Seus workspaces',
+}
+en.workspaceSwitcher = {
+  title: 'Your workspaces',
+}
+Object.assign(pt.profile, {
+  workspaces: 'WORKSPACES',
+  manageWorkspaces: 'Seus ambientes de trabalho',
+  workspacesText: 'Crie um workspace independente ou alterne entre os ambientes dos quais você participa.',
+  newWorkspace: '+ Novo workspace',
+  workspaceName: 'Nome do workspace',
+  workspaceNamePlaceholder: 'Ex.: Minha nova empresa',
+  creatingWorkspace: 'Criando…',
+  createWorkspace: 'Criar workspace',
+  currentWorkspace: 'Workspace atual',
+  switchWorkspace: 'Acessar workspace',
+})
+Object.assign(en.profile, {
+  workspaces: 'WORKSPACES',
+  manageWorkspaces: 'Your work environments',
+  workspacesText: 'Create an independent workspace or switch between the environments you belong to.',
+  newWorkspace: '+ New workspace',
+  workspaceName: 'Workspace name',
+  workspaceNamePlaceholder: 'E.g. My new company',
+  creatingWorkspace: 'Creating…',
+  createWorkspace: 'Create workspace',
+  currentWorkspace: 'Current workspace',
+  switchWorkspace: 'Open workspace',
+})
+
 pt.legal = {
   footerNavigation: 'Links legais',
   back: 'Voltar para o início',

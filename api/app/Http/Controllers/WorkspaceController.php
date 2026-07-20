@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesWorkspace;
 use App\Models\User;
+use App\Models\Workspace;
 use App\Models\WorkspaceInvitation;
 use App\Notifications\WorkspaceInvitationNotification;
 use App\Services\PlanService;
@@ -18,6 +19,51 @@ use Illuminate\Support\Str;
 class WorkspaceController extends Controller
 {
     use ResolvesWorkspace;
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate(['name' => ['required', 'string', 'max:120']]);
+        $name = trim($data['name']);
+        $baseSlug = Str::slug($name) ?: 'workspace';
+
+        $workspace = DB::transaction(function () use ($request, $name, $baseSlug) {
+            $workspace = Workspace::create([
+                'name' => $name,
+                'slug' => $baseSlug.'-'.Str::lower(Str::random(8)),
+            ]);
+            $workspace->members()->attach($request->user()->id, [
+                'role' => 'owner',
+                'can_create_campaigns' => true,
+                'can_view_metrics' => true,
+                'joined_at' => now(),
+            ]);
+            $request->user()->update(['current_workspace_id' => $workspace->id]);
+
+            return $workspace;
+        });
+
+        return response()->json([
+            'message' => __('api.workspace_created'),
+            'data' => [
+                ...$workspace->only(['id', 'name', 'slug']),
+                'plan' => $workspace->planCode(),
+            ],
+        ], 201);
+    }
+
+    public function switch(Request $request): JsonResponse
+    {
+        $data = $request->validate(['workspace_id' => ['required', 'integer']]);
+        $workspace = $request->user()->workspaces()->where('workspaces.id', $data['workspace_id'])->first();
+        abort_unless($workspace, 403, __('api.workspace_access_denied'));
+
+        $request->user()->update(['current_workspace_id' => $workspace->id]);
+
+        return response()->json([
+            'message' => __('api.workspace_switched'),
+            'data' => $workspace->only(['id', 'name', 'slug']),
+        ]);
+    }
 
     public function show(Request $request, WorkspaceAccessService $access): JsonResponse
     {

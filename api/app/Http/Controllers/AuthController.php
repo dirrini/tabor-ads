@@ -102,6 +102,20 @@ class AuthController extends Controller
     {
         $workspace = $user->currentWorkspace();
         $permissions = $workspace ? app(WorkspaceAccessService::class)->permissions($user, $workspace) : null;
+        $workspaces = $user->workspaces()
+            ->orderBy('workspaces.name')
+            ->get()
+            ->map(function (Workspace $memberWorkspace) use ($user) {
+                $memberPermissions = app(WorkspaceAccessService::class)->permissions($user, $memberWorkspace);
+
+                return [
+                    ...$memberWorkspace->only(['id', 'name', 'slug']),
+                    'plan' => $memberWorkspace->planCode(),
+                    'role' => $memberPermissions['role'],
+                    'permissions' => $memberPermissions,
+                ];
+            })
+            ->values();
 
         return ['user' => [
             ...$user->only(['id', 'name', 'email', 'locale']),
@@ -110,6 +124,6 @@ class AuthController extends Controller
             'id' => $workspace->id, 'name' => $workspace->name, 'slug' => $workspace->slug,
             'plan' => $workspace->planCode(), 'role' => $permissions['role'], 'permissions' => $permissions,
             'limits' => config('plans.'.$workspace->planCode()),
-        ] : null];
+        ] : null, 'workspaces' => $workspaces];
     }
 }
