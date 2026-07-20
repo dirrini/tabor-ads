@@ -8,9 +8,9 @@
     <section id="recursos" class="section wrap"><div class="section-title"><span>{{ t('landing.features.eyebrow') }}</span><h2>{{ t('landing.features.title') }}</h2></div><div class="feature-grid"><article><span class="feature-number">01</span><h3>{{ t('landing.features.trackingTitle') }}</h3><p>{{ t('landing.features.trackingText') }}</p></article><article><span class="feature-number">02</span><h3>{{ t('landing.features.campaignsTitle') }}</h3><p>{{ t('landing.features.campaignsText') }}</p></article><article class="accent-card"><span class="feature-number">03</span><h3>{{ t('landing.features.realtimeTitle') }}</h3><p>{{ t('landing.features.realtimeText') }}</p><div class="pulse-demo"><i></i><span></span><span></span><span></span></div></article></div></section>
     <section id="como-funciona" class="how"><div class="wrap how-grid"><div><span class="eyebrow light">{{ t('landing.how.eyebrow') }}</span><h2 class="pre-line">{{ t('landing.how.title') }}</h2></div><ol><li v-for="step in steps" :key="step.number"><b>{{ step.number }}</b><span><strong>{{ t(step.title) }}</strong><small>{{ t(step.text) }}</small></span></li></ol></div></section>
     <section id="planos" class="section wrap pricing-section"><div class="section-title"><span>{{ t('landing.pricing.eyebrow') }}</span><h2>{{ t('landing.pricing.title') }}</h2></div><div class="pricing-grid">
-      <article class="price-card"><small>FREE</small><h3>R$ 0 <span>/ {{ t('common.month') }}</span></h3><p>{{ t('landing.pricing.freeText') }}</p><ul><li>{{ t('landing.pricing.campaigns3') }}</li><li>{{ t('landing.pricing.oneAd') }}</li><li>{{ t('landing.pricing.static') }}</li><li>{{ t('landing.pricing.oneMember') }}</li></ul><RouterLink class="btn btn-dark" to="/register">{{ t('landing.pricing.create') }}</RouterLink></article>
-      <article class="price-card"><small>{{ t('landing.pricing.monthly') }}</small><h3>R$ 1,90 <span>/ {{ t('common.month') }}</span></h3><p>{{ t('landing.pricing.monthlyText') }}</p><ul><li>{{ t('landing.pricing.campaigns20') }}</li><li>{{ t('landing.pricing.tenAds') }}</li><li>{{ t('landing.pricing.realtime') }}</li><li>{{ t('landing.pricing.fiveMembers') }}</li></ul><RouterLink class="btn btn-dark" :to="premiumRoute('monthly')">{{ t('landing.pricing.chooseMonthly') }}</RouterLink></article>
-      <article class="price-card featured"><div class="popular">{{ t('landing.pricing.best') }}</div><small>{{ t('landing.pricing.annual') }}</small><h3>R$ 9,90 <span>/ {{ t('common.year') }}</span></h3><p>{{ t('landing.pricing.annualText') }}</p><ul><li>{{ t('landing.pricing.allPremium') }}</li><li>{{ t('landing.pricing.singlePayment') }}</li><li>{{ t('landing.pricing.pixCard') }}</li><li>{{ t('landing.pricing.twelveMonths') }}</li></ul><RouterLink class="btn btn-primary" :to="premiumRoute('annual')">{{ t('landing.pricing.chooseAnnual') }}</RouterLink></article>
+      <article class="price-card"><small>FREE</small><h3>{{ money(0) }} <span>/ {{ t('common.month') }}</span></h3><p>{{ t('landing.pricing.freeText') }}</p><ul><li>{{ t('landing.pricing.campaigns3') }}</li><li>{{ t('landing.pricing.oneAd') }}</li><li>{{ t('landing.pricing.static') }}</li><li>{{ t('landing.pricing.oneMember') }}</li></ul><RouterLink class="btn btn-dark" to="/register">{{ t('landing.pricing.create') }}</RouterLink></article>
+      <article class="price-card"><small>{{ t('landing.pricing.monthly') }}</small><h3>{{ planPrice('monthly') }} <span>/ {{ t('common.month') }}</span></h3><p>{{ t('landing.pricing.monthlyText') }}</p><ul><li>{{ t('landing.pricing.campaigns20') }}</li><li>{{ t('landing.pricing.tenAds') }}</li><li>{{ t('landing.pricing.realtime') }}</li><li>{{ t('landing.pricing.fiveMembers') }}</li></ul><RouterLink class="btn btn-dark" :to="premiumRoute('monthly')">{{ t('landing.pricing.chooseMonthly') }}</RouterLink></article>
+      <article class="price-card featured"><div class="popular">{{ t('landing.pricing.best') }}</div><small>{{ t('landing.pricing.annual') }}</small><h3>{{ planPrice('annual') }} <span>/ {{ t('common.year') }}</span></h3><p>{{ t('landing.pricing.annualText') }}</p><ul><li>{{ t('landing.pricing.allPremium') }}</li><li>{{ t('landing.pricing.singlePayment', { amount: planPrice('annual') }) }}</li><li>{{ t('landing.pricing.pixCard') }}</li><li>{{ t('landing.pricing.twelveMonths') }}</li></ul><RouterLink class="btn btn-primary" :to="premiumRoute('annual')">{{ t('landing.pricing.chooseAnnual') }}</RouterLink></article>
     </div></section>
     <footer class="footer wrap">
       <BrandLogo/>
@@ -25,7 +25,24 @@
   </main>
 </template>
 <script setup>
-import { RouterLink } from 'vue-router'; import { useI18n } from 'vue-i18n'; import LocaleSwitcher from '../components/LocaleSwitcher.vue'; import BrandLogo from '../components/BrandLogo.vue'
-const { t }=useI18n(); const steps=[{number:'01',title:'landing.how.step1Title',text:'landing.how.step1Text'},{number:'02',title:'landing.how.step2Title',text:'landing.how.step2Text'},{number:'03',title:'landing.how.step3Title',text:'landing.how.step3Text'}]
-const premiumRoute=(plan)=>({path:'/register',query:{redirect:`/app/billing?plan=${plan}`}})
+import { onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import LocaleSwitcher from '../components/LocaleSwitcher.vue'
+import BrandLogo from '../components/BrandLogo.vue'
+import { api } from '../lib/api'
+
+const { t, locale } = useI18n()
+const pricing = ref(null)
+const steps = [{number:'01',title:'landing.how.step1Title',text:'landing.how.step1Text'},{number:'02',title:'landing.how.step2Title',text:'landing.how.step2Text'},{number:'03',title:'landing.how.step3Title',text:'landing.how.step3Text'}]
+const premiumRoute = (plan) => ({path:'/register',query:{redirect:`/app/billing?plan=${plan}`}})
+const money = (amount) => new Intl.NumberFormat(locale.value === 'en' ? 'en-US' : 'pt-BR', {
+  style: 'currency',
+  currency: pricing.value?.currency || 'BRL',
+}).format(amount)
+const planPrice = (cycle) => pricing.value?.plans?.[cycle] ? money(pricing.value.plans[cycle].amount) : '—'
+
+onMounted(async () => {
+  try { pricing.value = await api('/api/billing/plans') } catch {}
+})
 </script>
