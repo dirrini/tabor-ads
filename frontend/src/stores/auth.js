@@ -49,6 +49,11 @@ export const useAuthStore = defineStore('auth', {
       await this.refresh()
       return result
     },
+    async updateName(name) {
+      const result = await api('/api/profile', { method: 'PATCH', body: JSON.stringify({ name }) })
+      this.user = { ...this.user, ...result.user }
+      return result
+    },
     async updateLocale(locale) {
       const previous = this.user?.locale
       setAppLocale(locale)

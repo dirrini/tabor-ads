@@ -68,6 +68,21 @@ class ProfileTest extends TestCase
         $this->assertTrue(Hash::check('FirstPassword123', $user->fresh()->password));
     }
 
+    public function test_user_can_update_their_name(): void
+    {
+        [$user] = $this->member(['name' => 'Previous Name']);
+
+        $this->actingAs($user)->patchJson('/api/profile', ['name' => 'Updated Name'])
+            ->assertOk()
+            ->assertJsonPath('user.name', 'Updated Name');
+
+        $this->assertSame('Updated Name', $user->fresh()->name);
+
+        $this->actingAs($user)->patchJson('/api/profile', ['name' => ''])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('name');
+    }
+
     private function member(array $attributes = []): array
     {
         $user = User::factory()->create($attributes);

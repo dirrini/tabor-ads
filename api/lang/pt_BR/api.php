@@ -42,6 +42,7 @@ return [
     'current_password_required' => 'Informe sua senha atual.',
     'current_password_invalid' => 'A senha atual está incorreta.',
     'password_updated' => 'Senha alterada com sucesso.',
+    'profile_updated' => 'Perfil atualizado com sucesso.',
     'workspace_owner_only' => 'Somente o proprietário do workspace pode realizar esta operação.',
     'campaign_permission_required' => 'Você não possui permissão para gerenciar campanhas.',
     'owner_permissions_immutable' => 'As permissões do proprietário do workspace não podem ser alteradas.',

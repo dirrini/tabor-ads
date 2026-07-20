@@ -42,6 +42,7 @@ return [
     'current_password_required' => 'Enter your current password.',
     'current_password_invalid' => 'The current password is incorrect.',
     'password_updated' => 'Password changed successfully.',
+    'profile_updated' => 'Profile updated successfully.',
     'workspace_owner_only' => 'Only the workspace owner can perform this operation.',
     'campaign_permission_required' => 'You do not have permission to manage campaigns.',
     'owner_permissions_immutable' => 'The workspace owner permissions cannot be changed.',

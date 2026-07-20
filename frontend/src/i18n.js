@@ -323,6 +323,8 @@ Object.assign(pt.profile, {
   createWorkspace: 'Criar workspace',
   currentWorkspace: 'Workspace atual',
   switchWorkspace: 'Acessar workspace',
+  saveName: 'Salvar nome',
+  savingName: 'Salvando…',
 })
 Object.assign(en.profile, {
   workspaces: 'WORKSPACES',
@@ -335,6 +337,8 @@ Object.assign(en.profile, {
   createWorkspace: 'Create workspace',
   currentWorkspace: 'Current workspace',
   switchWorkspace: 'Open workspace',
+  saveName: 'Save name',
+  savingName: 'Saving…',
 })
 
 pt.legal = {

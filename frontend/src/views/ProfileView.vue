@@ -108,8 +108,17 @@
             </div>
             <span class="account-avatar">{{ initials }}</span>
           </div>
+          <form class="profile-name-form" @submit.prevent="updateName">
+            <label>
+              {{ t('profile.name') }}
+              <input v-model="accountName" maxlength="120" autocomplete="name" required>
+            </label>
+            <button class="btn btn-dark" :disabled="updatingName || accountName.trim() === profile.user.name">
+              <span v-if="updatingName" class="button-spinner"></span>
+              {{ t(updatingName ? 'profile.savingName' : 'profile.saveName') }}
+            </button>
+          </form>
           <dl class="profile-details account-details">
-            <div><dt>{{ t('profile.name') }}</dt><dd>{{ profile.user.name }}</dd></div>
             <div><dt>{{ t('common.email') }}</dt><dd>{{ profile.user.email }} <span class="verified-badge">{{ t(profile.user.email_verified ? 'profile.verified' : 'profile.notVerified') }}</span></dd></div>
             <div><dt>{{ t('profile.accountSince') }}</dt><dd>{{ formatDate(profile.user.created_at) }}</dd></div>
             <div><dt>{{ t('profile.language') }}</dt><dd>{{ profile.user.locale === 'en' ? 'English' : 'Português (Brasil)' }}</dd></div>
@@ -158,10 +167,12 @@ const route = useRoute()
 const router = useRouter()
 const loading = ref(true)
 const submitting = ref(false)
+const updatingName = ref(false)
 const creatingWorkspace = ref(false)
 const switchingWorkspace = ref(false)
 const showWorkspaceForm = ref(route.query.newWorkspace === '1')
 const workspaceName = ref('')
+const accountName = ref('')
 const profile = reactive({ user: null, workspace: null, subscription: null })
 const password = reactive({ current_password: '', password: '', password_confirmation: '' })
 
@@ -192,6 +203,7 @@ async function loadProfile() {
   loading.value = true
   try {
     Object.assign(profile, (await api('/api/profile')).data)
+    accountName.value = profile.user.name
   } catch (error) {
     toast.error(error.message)
   } finally {
@@ -210,6 +222,21 @@ async function changePassword() {
     toast.error(error.message)
   } finally {
     submitting.value = false
+  }
+}
+
+async function updateName() {
+  if (updatingName.value) return
+  updatingName.value = true
+  try {
+    const result = await auth.updateName(accountName.value.trim())
+    profile.user.name = result.user.name
+    accountName.value = result.user.name
+    toast.success(result.message)
+  } catch (error) {
+    toast.error(error.message)
+  } finally {
+    updatingName.value = false
   }
 }
 

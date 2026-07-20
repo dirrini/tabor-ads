@@ -41,6 +41,7 @@ Route::prefix('api')->group(function () {
 
         Route::middleware('verified')->group(function () {
             Route::get('/profile', [ProfileController::class, 'show']);
+            Route::patch('/profile', [ProfileController::class, 'update']);
             Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:6,1');
             Route::post('/workspaces', [WorkspaceController::class, 'store'])->middleware('throttle:10,1');
             Route::put('/workspaces/current', [WorkspaceController::class, 'switch'])->middleware('throttle:30,1');
